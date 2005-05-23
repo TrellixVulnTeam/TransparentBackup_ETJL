@@ -74,19 +74,19 @@ class DirectoryTree:
   gen_fs=staticmethod(gen_fs)
 
   def gen_fs_directory (source_leafname,source_pathname):
-    subobjects=[]
-    subobjects=os.listdir(source_pathname)
-    subobjects.sort()
+    subobjs=[]
+    subobjs=os.listdir(source_pathname)
+    subobjs.sort()
     i=0
-    while i<len(subobjects):
-      leafname=subobjects[i]
+    while i<len(subobjs):
+      leafname=subobjs[i]
       pathname=os.path.join(source_pathname,leafname)
       if os.path.isdir(pathname):
-        subobjects[i]=DirectoryTree.gen_fs_directory(leafname,pathname)
+        subobjs[i]=DirectoryTree.gen_fs_directory(leafname,pathname)
       else:
-        subobjects[i]=File(leafname,Signature.gen_fs(pathname))
+        subobjs[i]=File(leafname,Signature.gen_fs(pathname))
       i=i+1
-    return Directory(source_leafname,subobjects)
+    return Directory(source_leafname,subobjs)
   gen_fs_directory=staticmethod(gen_fs_directory)
 
   def gen_dtml (pathname):
@@ -96,8 +96,8 @@ class DirectoryTree:
   def writedtml (self,pathname):
     file=open(pathname,"wb")
     file.write("<DTML>\n")
-    for subobject in self.root.subobjects:
-      subobject.writedtml(file,2)
+    for subobj in self.root.subobjs:
+      subobj.writedtml(file,2)
     file.write("</DTML>")
     file.close()
 
@@ -114,23 +114,23 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
   def __init__ (self,pathname):
     sgmllib.SGMLParser.__init__(self)
     self.dirnamestack=[]
-    self.subobjectstack=[]
+    self.subobjstack=[]
 
     file=open(pathname,"rb")
     data=file.read()
     file.close()
 
-    self.subobjectstack.append([])
+    self.subobjstack.append([])
 
     self.feed(data)
     self.close()
 
-    if len(self.subobjectstack)!=1:
+    if len(self.subobjstack)!=1:
       sys.exit("Error in DirectoryTree: while parsing a DTML file, found that DIR tags had not been closed")
     assert len(self.dirnamestack)==0
-    subobjects=self.subobjectstack.pop()
-    subobjects.sort()
-    self.root=Directory(None,subobjects)
+    subobjs=self.subobjstack.pop()
+    subobjs.sort()
+    self.root=Directory(None,subobjs)
 
   def report_unbalanced (self,tag):
     sys.exit("Error in DirectoryTree: while parsing a DTML file, found an end '"+tag+"' tag without a start tag")
@@ -140,18 +140,18 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     if not attrs.has_key("name"):
       sys.exit("Error in DirectoryTree: DIR without name (attributes are "+str(attrs)+")")
     self.dirnamestack.append(attrs["name"])
-    self.subobjectstack.append([])
+    self.subobjstack.append([])
 
   def end_dir (self):
-    subobjects=self.subobjectstack.pop()
-    subobjects.sort()
-    self.subobjectstack[-1].append(Directory(self.dirnamestack.pop(),subobjects))
+    subobjs=self.subobjstack.pop()
+    subobjs.sort()
+    self.subobjstack[-1].append(Directory(self.dirnamestack.pop(),subobjs))
 
   def do_file (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
       sys.exit("Error in DirectoryTree: FILE without name (attributes are "+str(attrs)+")")
-    self.subobjectstack[-1].append(File(attrs["name"],Signature.gen_dtml(attrs)))
+    self.subobjstack[-1].append(File(attrs["name"],Signature.gen_dtml(attrs)))
 
 
 
@@ -172,17 +172,17 @@ class Object:
 
 
 class Directory(Object):
-  def __init__ (self,leafname,subobjects):
+  def __init__ (self,leafname,subobjs):
     Object.__init__(self,leafname)
-    self.subobjects=subobjects
+    self.subobjs=subobjs
 
   def writedtml (self,file,depth):
     file.write(" "*depth)
     file.write("<DIR name=\"")
     file.write(cgi.escape(self.leafname,True))
     file.write("\">\n")
-    for subobject in self.subobjects:
-      subobject.writedtml(file,depth+2)
+    for subobj in self.subobjs:
+      subobj.writedtml(file,depth+2)
     file.write(" "*depth)
     file.write("</DIR>\n")
 
