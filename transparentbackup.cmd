@@ -36,17 +36,16 @@ def main (args):
     sys.exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
     sys.exit("Backup source path (-b) is not a directory\n"+syntax)
-  if opt_diff_dtml==None:
-    sys.exit("No DTML source file (-d) supplied\n"+syntax)
   if opt_output==None:
     sys.exit("No output path (-o) supplied\n"+syntax)
   if not os.path.isdir(opt_output):
     sys.exit("Output path (-b) is not a directory\n"+syntax)
-
   opt_backup_source=os.path.abspath(opt_backup_source)
+  if opt_diff_dtml!=None:
+    opt_diff_dtml=os.path.abspath(opt_diff_dtml)
+
   print "Backup source: "+opt_backup_source
-  opt_diff_dtml=os.path.abspath(opt_diff_dtml)
-  print "DTML file: "+opt_diff_dtml
+  print "DTML file: "+str(opt_diff_dtml)
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
@@ -54,17 +53,24 @@ def main (args):
 
 
 
-def transparentbackup (backup_source,diff_dtml,output):
-  dirtree=DirectoryTree.gen_fs(backup_source)
-  dirtree.writedtml(diff_dtml)
-  dirtree=DirectoryTree.gen_dtml(diff_dtml)
-  dirtree.writedtml("dump.dtml")
+def transparentbackup (new_pathname,old_dtml,output_pathname):
+  if old_dtml==None:
+    oldtree=DirectoryTree.gen_empty()
+  else:
+    oldtree=DirectoryTree.gen_dtml(old_dtml)
+  newtree=DirectoryTree.gen_fs(new_pathname)
+  DirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname)
+  newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
 
 
 
 class DirectoryTree:
   def __init__ (self,root):
     self.root=root
+
+  def gen_empty ():
+    return DirectoryTree(Directory(None,[]))
+  gen_empty=staticmethod(gen_empty)
 
   def gen_fs (source_pathname):
     (t,source_leafname)=os.path.split(source_pathname)
@@ -157,17 +163,25 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
 
 class Object:
   def __init__ (self,leafname):
+    if leafname!=None and len(leafname)>0 and leafname[0]==chr(255):
+      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with chr(255)")
     self.leafname=leafname
 
   def __cmp__ (self,other):
-    if self.leafname<other.leafname:
-      return -1
-    if self.leafname>other.leafname:
-      return 1
-    return 0
+    return cmp(self.leafname,other.leafname)
 
   def writedtml (self,file,depth):
     raise NotImplementedError
+
+
+
+class SentinelObject:
+  def __init__ (self):
+    self.leafname=chr(255)
+
+
+
+sentinelobj=SentinelObject()
 
 
 
@@ -209,7 +223,7 @@ class Signature:
   def __init__ (self,size,md5sum_hexstring):
     if len(md5sum_hexstring)!=32:
       sys.exit("Error in Signature: initialised with MD5 sum '"+md5sum_hexstring+"', which is invalid")
-    self.size=size
+    self.size=int(size)
     self.md5sum=md5sum_hexstring.upper()
 
   def gen_fs (pathname):
@@ -236,14 +250,23 @@ class Signature:
   gen_dtml=staticmethod(gen_dtml)
 
   def __cmp__ (self,other):
+    #print "    __cmp__ing:"
+    #print "      "+str(self.size)+","+str(self.md5sum)
+    #print "      "+str(other.size)+","+str(other.md5sum)
+
     if self.size<other.size:
+      #print "      self less size"
       return -1
+    #print "again, self size is "+str(self.size)+" and other size is "+str(other.size)
     if self.size>other.size:
       return 1
     if self.md5sum<other.md5sum:
+      #print "      self less sum"
       return -1
     if self.md5sum>other.md5sum:
+      #print "      self more sum"
       return 1
+    #print "      self same"
     return 0
 
   def __hash__ (self):
@@ -254,6 +277,122 @@ class Signature:
     file.write(str(self.size))
     file.write(" md5sum=")
     file.write(str(self.md5sum))
+
+
+
+class DirectoryTreeDiffer:
+  def diff (self,oldtree,newtree,new_pathname,output_pathname):
+    self.new_pathname=new_pathname
+#   self.output_pathname=output_pathname
+    self.builddiffs_file=open(os.path.join(output_pathname,"!builddiffs.bat"),"wb")
+    self.applydiffs_file=open(os.path.join(output_pathname,"!applydiffs.bat"),"wb")
+    self.builddiffs_file.write("REM Copies files to be backed up to the current directory\n")
+    self.applydiffs_file.write("REM Deletes files no longer present, rooted in the current directory\n")
+    self.diff_directory(oldtree.root,newtree.root,".")
+    self.builddiffs_file.close()
+    self.applydiffs_file.close()
+
+  def diff_directory (self,olddir,newdir,source_pathname):
+    assert olddir.leafname==newdir.leafname
+    assert isinstance(olddir,Directory)
+    assert isinstance(newdir,Directory)
+
+    # First, process files
+    oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,File)]+[sentinelobj]
+    old=oldsubobjs[0]
+    oldindex=1
+    newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]+[sentinelobj]
+    new=newsubobjs[0]
+    newindex=1
+    #print "file oldsubobjs is "+str(oldsubobjs)
+    #print "file newsubobjs is "+str(newsubobjs)
+    while old!=sentinelobj or new!=sentinelobj:
+      if old.leafname==new.leafname:
+        #print "Looking at "+old.leafname+" and its identically named companion:"
+
+        #print "  Old size:"+str(old.signature.size)
+        #print "  New size:"+str(new.signature.size)
+        #print "  Old md5:"+str(old.signature.md5sum)
+        #print "  New md5:"+str(new.signature.md5sum)
+
+        # An old file still exists
+        if old.signature!=new.signature:
+          #print "  The sigs are different"
+          self.file_modified(old,new,os.path.join(source_pathname,old.leafname))
+        #else:
+          #print "  The sigs are the same"
+
+        old=oldsubobjs[oldindex]
+        oldindex=oldindex+1
+        new=newsubobjs[newindex]
+        newindex=newindex+1
+      elif old.leafname<new.leafname:
+        # An old file no longer exists
+        self.file_del(old,os.path.join(source_pathname,old.leafname))
+        old=oldsubobjs[oldindex]
+        oldindex=oldindex+1
+      else:
+        # A new file has been created
+        self.file_gen(new,os.path.join(source_pathname,new.leafname))
+        new=newsubobjs[newindex]
+        newindex=newindex+1
+
+    # Then, process directories
+    oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,Directory)]+[sentinelobj]
+    old=oldsubobjs[0]
+    oldindex=1
+    newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]+[sentinelobj]
+    new=newsubobjs[0]
+    newindex=1
+    #print "dir oldsubobjs is "+str(oldsubobjs)
+    #print "dir newsubobjs is "+str(newsubobjs)
+    while old!=sentinelobj or new!=sentinelobj:
+      if old.leafname==new.leafname:
+        # An directory still exists
+        self.diff_directory(old,new,os.path.join(source_pathname,old.leafname))
+        old=oldsubobjs[oldindex]
+        oldindex=oldindex+1
+        new=newsubobjs[newindex]
+        newindex=newindex+1
+      elif old.leafname<new.leafname:
+        # An old directory no longer exists
+# What do we do about deleted dirs? Do we signal deletion on each subobject recursively? We probably should, though it may not yet be necessary for our purposes
+        self.dir_del(old,os.path.join(source_pathname,old.leafname))
+        old=oldsubobjs[oldindex]
+        oldindex=oldindex+1
+      else:
+        # A new directory has been created
+# Surely we should recursively signal creation of a new dir! Again, maybe we can just copy ~/* for now
+        self.dir_gen(new,os.path.join(source_pathname,new.leafname))
+        new=newsubobjs[newindex]
+        newindex=newindex+1
+
+  def dir_gen (self,newobj,pathname):
+    self.builddiffs_file.write("cp dir from \"")
+    self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
+    self.builddiffs_file.write("\" to \"")
+    self.builddiffs_file.write(pathname)
+    self.builddiffs_file.write("\"\n")
+
+  def dir_del (self,oldobj,pathname):
+    self.applydiffs_file.write("del dir from \"")
+    self.applydiffs_file.write(pathname)
+    self.applydiffs_file.write("\"\n")
+
+  def file_gen (self,newobj,pathname):
+    self.builddiffs_file.write("cp file from \"")
+    self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
+    self.builddiffs_file.write("\" to \"")
+    self.builddiffs_file.write(pathname)
+    self.builddiffs_file.write("\"\n")
+
+  def file_del (self,oldobj,pathname):
+    self.applydiffs_file.write("del file from \"")
+    self.applydiffs_file.write(pathname)
+    self.applydiffs_file.write("\"\n")
+
+  def file_modified (self,oldobj,newobj,pathname):
+    self.file_gen(newobj,pathname)
 
 
 
