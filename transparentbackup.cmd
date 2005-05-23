@@ -368,26 +368,26 @@ class DirectoryTreeDiffer:
         newindex=newindex+1
 
   def dir_gen (self,newobj,pathname):
-    self.builddiffs_file.write("cp dir from \"")
+    self.builddiffs_file.write("XCOPY /E /I \"")
     self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
-    self.builddiffs_file.write("\" to \"")
+    self.builddiffs_file.write("\" \"")
     self.builddiffs_file.write(pathname)
     self.builddiffs_file.write("\"\n")
 
   def dir_del (self,oldobj,pathname):
-    self.applydiffs_file.write("del dir from \"")
+    self.applydiffs_file.write("RMDIR /S /Q \"")
     self.applydiffs_file.write(pathname)
     self.applydiffs_file.write("\"\n")
 
   def file_gen (self,newobj,pathname):
-    self.builddiffs_file.write("cp file from \"")
+    self.builddiffs_file.write("COPY \"")
     self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
-    self.builddiffs_file.write("\" to \"")
+    self.builddiffs_file.write("\" \"")
     self.builddiffs_file.write(pathname)
     self.builddiffs_file.write("\"\n")
 
   def file_del (self,oldobj,pathname):
-    self.applydiffs_file.write("del file from \"")
+    self.applydiffs_file.write("DEL /F \"")
     self.applydiffs_file.write(pathname)
     self.applydiffs_file.write("\"\n")
 
