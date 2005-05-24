@@ -6,6 +6,7 @@
 #  V1.00 : Compares a directory tree with a DTML file and creates
 #          data about the differences between them.
 # -----------------------------------------------------------------  #
+import time
 import sys
 import string
 import getopt
@@ -232,7 +233,7 @@ class Signature:
     file=open(pathname,"rb")
     consumed=0
     while True:
-      block=file.read(128*1024)
+      block=file.read(256*1024)
       if len(block)==0:
         break
       consumed=consumed+len(block)
@@ -402,6 +403,7 @@ class DirectoryTreeDiffer:
 
 
 if __name__=="__main__":
+  start=time.time()
   argv=sys.argv
   if len(argv)<2:
     main([])
@@ -409,3 +411,4 @@ if __name__=="__main__":
     main(string.split(argv[1]))
   else:
     main(argv[1:])
+  print "Took "+str(time.time()-start)+" secs"
