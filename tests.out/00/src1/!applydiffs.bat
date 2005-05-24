@@ -1,0 +1,11 @@
+REM Deletes files no longer present, rooted in the current directory
+DEL /F ".\Deleted File.txt"
+DEL /F ".\Moved and Edited File.txt"
+DEL /F ".\Moved and Unedited File.txt"
+DEL /F ".\A Subdirectory\Cross-Moved and Edited File.txt"
+DEL /F ".\A Subdirectory\Cross-Moved and Unedited File.txt"
+DEL /F ".\A Subdirectory\Deleted File.txt"
+DEL /F ".\A Subdirectory\Moved and Edited File.txt"
+DEL /F ".\A Subdirectory\Moved and Unedited File.txt"
+RMDIR /S /Q ".\Deleted Subdirectory"
+RMDIR /S /Q ".\Moved Subdirectory"

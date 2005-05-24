@@ -1,0 +1,2 @@
+This file will be both edited and moved in the same dir (with prefix 'Now '), since its parent will be moved. It will probably appear to be totally new.
+This is our edit!
