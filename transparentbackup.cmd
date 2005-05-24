@@ -380,6 +380,11 @@ class DirectoryTreeDiffer:
     self.applydiffs_file.write("\"\n")
 
   def file_gen (self,newobj,pathname):
+    parent=os.path.split(pathname)[0]
+    if parent!=".":
+      self.builddiffs_file.write("MKDIR \"")
+      self.builddiffs_file.write(parent)
+      self.builddiffs_file.write("\"\n")
     self.builddiffs_file.write("COPY \"")
     self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
     self.builddiffs_file.write("\" \"")
