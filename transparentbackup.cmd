@@ -310,19 +310,17 @@ class DirectoryTreeDiffer:
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
         #print "Looking at "+old.leafname+" and its identically named companion:"
-
         #print "  Old size:"+str(old.signature.size)
         #print "  New size:"+str(new.signature.size)
         #print "  Old md5:"+str(old.signature.md5sum)
         #print "  New md5:"+str(new.signature.md5sum)
-
         # An old file still exists
         if old.signature!=new.signature:
           #print "  The sigs are different"
           self.file_modified(old,new,os.path.join(source_pathname,old.leafname))
         #else:
           #print "  The sigs are the same"
-
+          self.file_unmodified(old,new,os.path.join(source_pathname,old.leafname))
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
         new=newsubobjs[newindex]
@@ -350,42 +348,76 @@ class DirectoryTreeDiffer:
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
         # An directory still exists
-        self.diff_directory(old,new,os.path.join(source_pathname,old.leafname))
+        t=os.path.join(source_pathname,old.leafname)
+        self.dir_unmodified(old,new,t)
+        self.diff_directory(old,new,t)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
         new=newsubobjs[newindex]
         newindex=newindex+1
       elif old.leafname<new.leafname:
         # An old directory no longer exists
-# What do we do about deleted dirs? Do we signal deletion on each subobject recursively? We probably should, though it may not yet be necessary for our purposes
-        self.dir_del(old,os.path.join(source_pathname,old.leafname))
+        t=os.path.join(source_pathname,old.leafname)
+        self.diff_directory_del(old,t)
+        self.dir_del(old,t)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
       else:
         # A new directory has been created
-# Surely we should recursively signal creation of a new dir! Again, maybe we can just copy ~/* for now
-        self.dir_gen(new,os.path.join(source_pathname,new.leafname))
+        t=os.path.join(source_pathname,new.leafname)
+        self.dir_gen(new,t)
+        self.diff_directory_gen(new,t)
         new=newsubobjs[newindex]
         newindex=newindex+1
 
+  def diff_directory_gen (self,newdir,source_pathname):
+    assert isinstance(newdir,Directory)
+
+    # First, process files
+    newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]
+    for new in newsubobjs:
+      #print "Looking at file "+new.leafname+", in a directory being recursively created:"
+      self.file_gen(new,os.path.join(source_pathname,new.leafname))
+
+    # Then, process directories
+    newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]
+    for new in newsubobjs:
+      #print "Looking at dir "+new.leafname+", in a directory being recursively created:"
+      t=os.path.join(source_pathname,new.leafname)
+      self.dir_gen(new,t)
+      self.diff_directory_gen(new,t)
+
+  def diff_directory_del (self,olddir,source_pathname):
+    assert isinstance(olddir,Directory)
+
+    # First, process files
+    oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,File)]
+    for old in oldsubobjs:
+      #print "Looking at file "+old.leafname+", in a directory being recursively deleted:"
+      self.file_del(old,os.path.join(source_pathname,old.leafname))
+
+    # Then, process directories
+    oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,Directory)]
+    for old in oldsubobjs:
+      #print "Looking at dir "+old.leafname+", in a directory being recursively deleted:"
+      t=os.path.join(source_pathname,old.leafname)
+      self.diff_directory_del(old,t)
+      self.dir_del(old,t)
+
   def dir_gen (self,newobj,pathname):
-    self.builddiffs_file.write("XCOPY /E /I \"")
-    self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
-    self.builddiffs_file.write("\" \"")
+    self.builddiffs_file.write("MKDIR \"")
     self.builddiffs_file.write(pathname)
     self.builddiffs_file.write("\"\n")
 
   def dir_del (self,oldobj,pathname):
-    self.applydiffs_file.write("RMDIR /S /Q \"")
+    self.applydiffs_file.write("RMDIR \"")
     self.applydiffs_file.write(pathname)
     self.applydiffs_file.write("\"\n")
 
+  def dir_unmodified (self,oldobj,newobj,pathname):
+    self.dir_gen(newobj,pathname)
+
   def file_gen (self,newobj,pathname):
-    parent=os.path.split(pathname)[0]
-    if parent!=".":
-      self.builddiffs_file.write("MKDIR \"")
-      self.builddiffs_file.write(parent)
-      self.builddiffs_file.write("\"\n")
     self.builddiffs_file.write("COPY \"")
     self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
     self.builddiffs_file.write("\" \"")
@@ -399,6 +431,9 @@ class DirectoryTreeDiffer:
 
   def file_modified (self,oldobj,newobj,pathname):
     self.file_gen(newobj,pathname)
+
+  def file_unmodified (self,oldobj,newobj,pathname):
+    pass
 
 
 
