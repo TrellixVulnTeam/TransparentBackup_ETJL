@@ -13,7 +13,9 @@
   <FILE name="Cross-Moved and Edited File.txt" size=140 md5sum=39544F2C25AB87DCFEEF4AD7DC1F2A74>
   <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3>
   <DIR name="New Moved Subdirectory">
-    <FILE name="Created File.txt" size=66 md5sum=112113623D6BC605F3AB395FBEC7EF07>
+    <FILE name="Created File.txt" size=29 md5sum=6768AEE035748A86476A0EAF02DE2DA8>
+    <FILE name="Double Cross-Moved and Edited File.txt" size=175 md5sum=CD094C005774063B2876B7C5C54C847D>
+    <FILE name="Double Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3>
     <FILE name="Moved and Edited File.txt" size=171 md5sum=947F8DE6DC7CA2EFF793B52C63842FAC>
     <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233>
   </DIR>

@@ -60,27 +60,37 @@ def transparentbackup (new_pathname,old_dtml,output_pathname):
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
   newtree=DirectoryTree.gen_fs(new_pathname)
+  DirectoryTree.relname_cache=None
   DirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname)
   newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
 
 
 
 class DirectoryTree:
+  relname_cache={}
+  def relname_get (relname):
+    return DirectoryTree.relname_cache.setdefault(relname,relname)
+  relname_get=staticmethod(relname_get)
+
   def __init__ (self,root):
     self.root=root
 
   def gen_empty ():
-    return DirectoryTree(Directory(None,[]))
+    root=Directory(None,[])
+    root.relname=DirectoryTree.relname_get(".")
+    return DirectoryTree(root)
   gen_empty=staticmethod(gen_empty)
 
   def gen_fs (source_pathname):
     (t,source_leafname)=os.path.split(source_pathname)
     if len(source_leafname)==0:
       sys.exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if refering to a directory, omit this)")
-    return DirectoryTree(DirectoryTree.gen_fs_dir(None,source_pathname))
+    root=DirectoryTree.gen_fs_dir(None,source_pathname,".")
+    root.relname=DirectoryTree.relname_get(".")
+    return DirectoryTree(root)
   gen_fs=staticmethod(gen_fs)
 
-  def gen_fs_dir (source_leafname,source_pathname):
+  def gen_fs_dir (source_leafname,source_pathname,source_relname):
     subobjs=[]
     subobjs=os.listdir(source_pathname)
     subobjs.sort()
@@ -88,10 +98,13 @@ class DirectoryTree:
     while i<len(subobjs):
       leafname=subobjs[i]
       pathname=os.path.join(source_pathname,leafname)
+      relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
       if os.path.isdir(pathname):
-        subobjs[i]=DirectoryTree.gen_fs_dir(leafname,pathname)
+        subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname)
       else:
-        subobjs[i]=File(leafname,Signature.gen_fs(pathname))
+        subobj=File(leafname,Signature.gen_fs(pathname))
+      subobj.relname=relname
+      subobjs[i]=subobj
       i=i+1
     return Directory(source_leafname,subobjs)
   gen_fs_dir=staticmethod(gen_fs_dir)
@@ -120,24 +133,28 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
 
   def __init__ (self,pathname):
     sgmllib.SGMLParser.__init__(self)
-    self.dirnamestack=[]
+    self.dirleafnamestack=[]
+    self.dirrelnamestack=[]
     self.subobjstack=[]
 
     file=open(pathname,"rb")
     data=file.read()
     file.close()
 
+    self.dirrelnamestack.append(".")
     self.subobjstack.append([])
 
     self.feed(data)
     self.close()
 
+    assert len(self.subobjstack)==len(self.dirrelnamestack)
     if len(self.subobjstack)!=1:
       sys.exit("Error in DirectoryTree: while parsing a DTML file, found that DIR tags had not been closed")
-    assert len(self.dirnamestack)==0
+    assert len(self.dirleafnamestack)==0
     subobjs=self.subobjstack.pop()
     subobjs.sort()
     self.root=Directory(None,subobjs)
+    self.root.relname=DirectoryTree.relname_get(".")
 
   def report_unbalanced (self,tag):
     sys.exit("Error in DirectoryTree: while parsing a DTML file, found an end '"+tag+"' tag without a start tag")
@@ -146,19 +163,24 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
       sys.exit("Error in DirectoryTree: DIR without name (attributes are "+str(attrs)+")")
-    self.dirnamestack.append(attrs["name"])
+    self.dirleafnamestack.append(attrs["name"])
+    self.dirrelnamestack.append(DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"])))
     self.subobjstack.append([])
 
   def end_dir (self):
     subobjs=self.subobjstack.pop()
     subobjs.sort()
-    self.subobjstack[-1].append(Directory(self.dirnamestack.pop(),subobjs))
+    dir=Directory(self.dirleafnamestack.pop(),subobjs)
+    dir.relname=self.dirrelnamestack.pop()
+    self.subobjstack[-1].append(dir)
 
   def do_file (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
       sys.exit("Error in DirectoryTree: FILE without name (attributes are "+str(attrs)+")")
-    self.subobjstack[-1].append(File(attrs["name"],Signature.gen_dtml(attrs)))
+    file=File(attrs["name"],Signature.gen_dtml(attrs))
+    file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
+    self.subobjstack[-1].append(file)
 
 
 
@@ -169,6 +191,8 @@ class Object:
     self.leafname=leafname
 
   def __cmp__ (self,other):
+    if other==None:
+      return 1
     return cmp(self.leafname,other.leafname)
 
   def writedtml (self,file,depth):
@@ -252,6 +276,10 @@ class Signature:
 
   def __cmp__ (self,other):
     #print "    __cmp__ing:"
+
+    if other==None:
+      return 1
+
     #print "      "+str(self.size)+","+str(self.md5sum)
     #print "      "+str(other.size)+","+str(other.md5sum)
 
@@ -284,16 +312,62 @@ class Signature:
 class DirectoryTreeDiffer:
   def diff (self,oldtree,newtree,new_pathname,output_pathname):
     self.new_pathname=new_pathname
-#   self.output_pathname=output_pathname
     self.builddiffs_file=open(os.path.join(output_pathname,"!builddiffs.bat"),"wb")
-    self.applydiffs_file=open(os.path.join(output_pathname,"!applydiffs.bat"),"wb")
+    self.applydiffs_file=open(os.path.join(output_pathname,"!pre_applydiffs.bat"),"wb")
     self.builddiffs_file.write("REM Copies files to be backed up to the current directory\n")
-    self.applydiffs_file.write("REM Deletes files no longer present, rooted in the current directory\n")
-    self.diff_dir(oldtree.root,newtree.root,".")
+    self.applydiffs_file.write("REM Prepares the previous state of the backup set, rooted in the current directory, for having new files copied over it\n")
+    files={}
+    self.diff_pre(oldtree.root,files)
+    self.diff_dir(oldtree.root,newtree.root,files)
+    self.diff_post(oldtree.root)
     self.builddiffs_file.close()
     self.applydiffs_file.close()
 
-  def diff_dir (self,olddir,newdir,source_pathname):
+  def diff_pre (self,olddir,files):
+    assert isinstance(olddir,Directory)
+
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,File):
+        files[oldsubobj.signature]=oldsubobj
+        oldsubobj.copies=[]
+      elif isinstance(oldsubobj,Directory):
+        self.diff_pre(oldsubobj,files)
+      oldsubobj.deleted=False
+
+  def diff_post (self,olddir):
+    assert isinstance(olddir,Directory)
+
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,File):
+        if len(oldsubobj.copies)==0:
+          if oldsubobj.deleted==True:
+            self.applydiffs_file.write("DEL /F \"")
+            self.applydiffs_file.write(oldsubobj.relname)
+            self.applydiffs_file.write("\"\n")
+        else:
+          for copy in oldsubobj.copies[0:-1]:
+            self.applydiffs_file.write("COPY \"")
+            self.applydiffs_file.write(oldsubobj.relname)
+            self.applydiffs_file.write("\" \"")
+            self.applydiffs_file.write(copy.relname)
+            self.applydiffs_file.write("\"\n")
+          if oldsubobj.deleted==True:
+            self.applydiffs_file.write("MOVE \"")
+          else:
+            self.applydiffs_file.write("COPY \"")
+          self.applydiffs_file.write(oldsubobj.relname)
+          self.applydiffs_file.write("\" \"")
+          self.applydiffs_file.write(oldsubobj.copies[-1].relname)
+          self.applydiffs_file.write("\"\n")
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,Directory):
+        self.diff_post(oldsubobj)
+        if oldsubobj.deleted==True:
+          self.applydiffs_file.write("RMDIR \"")
+          self.applydiffs_file.write(oldsubobj.relname)
+          self.applydiffs_file.write("\"\n")
+
+  def diff_dir (self,olddir,newdir,files):
     assert olddir.leafname==newdir.leafname
     assert isinstance(olddir,Directory)
     assert isinstance(newdir,Directory)
@@ -317,22 +391,22 @@ class DirectoryTreeDiffer:
         # An old file still exists
         if old.signature!=new.signature:
           #print "  The sigs are different"
-          self.file_modified(old,new,os.path.join(source_pathname,old.leafname))
+          self.file_modified(old,new,files)
         #else:
           #print "  The sigs are the same"
-          self.file_unmodified(old,new,os.path.join(source_pathname,old.leafname))
+          self.file_unmodified(old,new,files)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
         new=newsubobjs[newindex]
         newindex=newindex+1
       elif old.leafname<new.leafname:
         # An old file no longer exists
-        self.file_del(old,os.path.join(source_pathname,old.leafname))
+        self.file_del(old,files)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
       else:
         # A new file has been created
-        self.file_gen(new,os.path.join(source_pathname,new.leafname))
+        self.file_gen(new,files)
         new=newsubobjs[newindex]
         newindex=newindex+1
 
@@ -348,91 +422,94 @@ class DirectoryTreeDiffer:
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
         # An directory still exists
-        t=os.path.join(source_pathname,old.leafname)
-        self.dir_unmodified(old,new,t)
-        self.diff_dir(old,new,t)
+        self.dir_unmodified(old,new,files)
+        self.diff_dir(old,new,files)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
         new=newsubobjs[newindex]
         newindex=newindex+1
       elif old.leafname<new.leafname:
         # An old directory no longer exists
-        t=os.path.join(source_pathname,old.leafname)
-        self.diff_dir_del(old,t)
-        self.dir_del(old,t)
+        self.diff_dir_del(old,files)
+        self.dir_del(old,files)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
       else:
         # A new directory has been created
-        t=os.path.join(source_pathname,new.leafname)
-        self.dir_gen(new,t)
-        self.diff_dir_gen(new,t)
+        self.dir_gen(new,files)
+        self.diff_dir_gen(new,files)
         new=newsubobjs[newindex]
         newindex=newindex+1
 
-  def diff_dir_gen (self,newdir,source_pathname):
+  def diff_dir_gen (self,newdir,files):
     assert isinstance(newdir,Directory)
 
     # First, process files
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]
     for new in newsubobjs:
       #print "Looking at file "+new.leafname+", in a directory being recursively created:"
-      self.file_gen(new,os.path.join(source_pathname,new.leafname))
+      self.file_gen(new,files)
 
     # Then, process directories
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]
     for new in newsubobjs:
       #print "Looking at dir "+new.leafname+", in a directory being recursively created:"
-      t=os.path.join(source_pathname,new.leafname)
-      self.dir_gen(new,t)
-      self.diff_dir_gen(new,t)
+      self.dir_gen(new,files)
+      self.diff_dir_gen(new,files)
 
-  def diff_dir_del (self,olddir,source_pathname):
+  def diff_dir_del (self,olddir,files):
     assert isinstance(olddir,Directory)
 
     # First, process files
     oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,File)]
     for old in oldsubobjs:
       #print "Looking at file "+old.leafname+", in a directory being recursively deleted:"
-      self.file_del(old,os.path.join(source_pathname,old.leafname))
+      self.file_del(old,files)
 
     # Then, process directories
     oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,Directory)]
     for old in oldsubobjs:
       #print "Looking at dir "+old.leafname+", in a directory being recursively deleted:"
-      t=os.path.join(source_pathname,old.leafname)
-      self.diff_dir_del(old,t)
-      self.dir_del(old,t)
+      self.diff_dir_del(old,files)
+      self.dir_del(old,files)
 
-  def dir_gen (self,newobj,pathname):
+  def dir_gen (self,newobj,files):
     self.builddiffs_file.write("MKDIR \"")
-    self.builddiffs_file.write(pathname)
+    self.builddiffs_file.write(newobj.relname)
     self.builddiffs_file.write("\"\n")
 
-  def dir_del (self,oldobj,pathname):
-    self.applydiffs_file.write("RMDIR \"")
-    self.applydiffs_file.write(pathname)
-    self.applydiffs_file.write("\"\n")
+  def dir_del (self,oldobj,files):
+    oldobj.deleted=True
+    #self.applydiffs_file.write("RMDIR \"")
+    #self.applydiffs_file.write(oldobj.relname)
+    #self.applydiffs_file.write("\"\n")
 
-  def dir_unmodified (self,oldobj,newobj,pathname):
-    self.dir_gen(newobj,pathname)
+  def dir_unmodified (self,oldobj,newobj,files):
+    self.dir_gen(newobj,files)
 
-  def file_gen (self,newobj,pathname):
-    self.builddiffs_file.write("COPY \"")
-    self.builddiffs_file.write(os.path.join(self.new_pathname,pathname))
-    self.builddiffs_file.write("\" \"")
-    self.builddiffs_file.write(pathname)
-    self.builddiffs_file.write("\"\n")
+  def file_gen (self,newobj,files):
+    oldobj=files.get(newobj.signature,None)
+    if oldobj==None:
+      # The new file is not a direct copy of an old one
+      self.builddiffs_file.write("COPY \"")
+      self.builddiffs_file.write(os.path.join(self.new_pathname,newobj.relname))
+      self.builddiffs_file.write("\" \"")
+      self.builddiffs_file.write(newobj.relname)
+      self.builddiffs_file.write("\"\n")
+    else:
+      # The new file is a copy of an old one
+      oldobj.copies.append(newobj)
 
-  def file_del (self,oldobj,pathname):
-    self.applydiffs_file.write("DEL /F \"")
-    self.applydiffs_file.write(pathname)
-    self.applydiffs_file.write("\"\n")
+  def file_del (self,oldobj,files):
+    oldobj.deleted=True
+    #self.applydiffs_file.write("DEL /F \"")
+    #self.applydiffs_file.write(oldobj.relname)
+    #self.applydiffs_file.write("\"\n")
 
-  def file_modified (self,oldobj,newobj,pathname):
-    self.file_gen(newobj,pathname)
+  def file_modified (self,oldobj,newobj,files):
+    self.file_gen(newobj,files)
 
-  def file_unmodified (self,oldobj,newobj,pathname):
+  def file_unmodified (self,oldobj,newobj,files):
     pass
 
 
