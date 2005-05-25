@@ -1,4 +1,6 @@
 REM Prepares the previous state of the backup set, rooted in the current directory, for having new files copied over it
+MKDIR ".\Created Subdirectory"
+MKDIR ".\New Moved Subdirectory"
 DEL /F ".\Deleted File.txt"
 DEL /F ".\Moved and Edited File.txt"
 COPY ".\Moved and Unedited File.txt" ".\New Moved and Unedited File.txt"

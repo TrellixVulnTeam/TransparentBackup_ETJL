@@ -477,6 +477,9 @@ class DirectoryTreeDiffer:
     self.builddiffs_file.write("MKDIR \"")
     self.builddiffs_file.write(newobj.relname)
     self.builddiffs_file.write("\"\n")
+    self.applydiffs_file.write("MKDIR \"")
+    self.applydiffs_file.write(newobj.relname)
+    self.applydiffs_file.write("\"\n")
 
   def dir_del (self,oldobj,files):
     oldobj.deleted=True
@@ -485,7 +488,9 @@ class DirectoryTreeDiffer:
     #self.applydiffs_file.write("\"\n")
 
   def dir_unmodified (self,oldobj,newobj,files):
-    self.dir_gen(newobj,files)
+    self.builddiffs_file.write("MKDIR \"")
+    self.builddiffs_file.write(newobj.relname)
+    self.builddiffs_file.write("\"\n")
 
   def file_gen (self,newobj,files):
     oldobj=files.get(newobj.signature,None)
