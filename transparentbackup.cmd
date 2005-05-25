@@ -392,7 +392,7 @@ class DirectoryTreeDiffer:
         if old.signature!=new.signature:
           #print "  The sigs are different"
           self.file_modified(old,new,files)
-        #else:
+        else:
           #print "  The sigs are the same"
           self.file_unmodified(old,new,files)
         old=oldsubobjs[oldindex]
