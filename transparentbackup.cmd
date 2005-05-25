@@ -275,27 +275,16 @@ class Signature:
   gen_dtml=staticmethod(gen_dtml)
 
   def __cmp__ (self,other):
-    #print "    __cmp__ing:"
-
     if other==None:
       return 1
-
-    #print "      "+str(self.size)+","+str(self.md5sum)
-    #print "      "+str(other.size)+","+str(other.md5sum)
-
     if self.size<other.size:
-      #print "      self less size"
       return -1
-    #print "again, self size is "+str(self.size)+" and other size is "+str(other.size)
     if self.size>other.size:
       return 1
     if self.md5sum<other.md5sum:
-      #print "      self less sum"
       return -1
     if self.md5sum>other.md5sum:
-      #print "      self more sum"
       return 1
-    #print "      self same"
     return 0
 
   def __hash__ (self):
@@ -379,21 +368,12 @@ class DirectoryTreeDiffer:
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]+[sentinelobj]
     new=newsubobjs[0]
     newindex=1
-    #print "file oldsubobjs is "+str(oldsubobjs)
-    #print "file newsubobjs is "+str(newsubobjs)
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
-        #print "Looking at "+old.leafname+" and its identically named companion:"
-        #print "  Old size:"+str(old.signature.size)
-        #print "  New size:"+str(new.signature.size)
-        #print "  Old md5:"+str(old.signature.md5sum)
-        #print "  New md5:"+str(new.signature.md5sum)
         # An old file still exists
         if old.signature!=new.signature:
-          #print "  The sigs are different"
           self.file_modified(old,new,files)
         else:
-          #print "  The sigs are the same"
           self.file_unmodified(old,new,files)
         old=oldsubobjs[oldindex]
         oldindex=oldindex+1
@@ -417,8 +397,6 @@ class DirectoryTreeDiffer:
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]+[sentinelobj]
     new=newsubobjs[0]
     newindex=1
-    #print "dir oldsubobjs is "+str(oldsubobjs)
-    #print "dir newsubobjs is "+str(newsubobjs)
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
         # An directory still exists
@@ -447,13 +425,11 @@ class DirectoryTreeDiffer:
     # First, process files
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]
     for new in newsubobjs:
-      #print "Looking at file "+new.leafname+", in a directory being recursively created:"
       self.file_gen(new,files)
 
     # Then, process directories
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]
     for new in newsubobjs:
-      #print "Looking at dir "+new.leafname+", in a directory being recursively created:"
       self.dir_gen(new,files)
       self.diff_dir_gen(new,files)
 
@@ -463,13 +439,11 @@ class DirectoryTreeDiffer:
     # First, process files
     oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,File)]
     for old in oldsubobjs:
-      #print "Looking at file "+old.leafname+", in a directory being recursively deleted:"
       self.file_del(old,files)
 
     # Then, process directories
     oldsubobjs=[subobj for subobj in olddir.subobjs if isinstance(subobj,Directory)]
     for old in oldsubobjs:
-      #print "Looking at dir "+old.leafname+", in a directory being recursively deleted:"
       self.diff_dir_del(old,files)
       self.dir_del(old,files)
 
@@ -483,9 +457,6 @@ class DirectoryTreeDiffer:
 
   def dir_del (self,oldobj,files):
     oldobj.deleted=True
-    #self.applydiffs_file.write("RMDIR \"")
-    #self.applydiffs_file.write(oldobj.relname)
-    #self.applydiffs_file.write("\"\n")
 
   def dir_unmodified (self,oldobj,newobj,files):
     self.builddiffs_file.write("MKDIR \"")
@@ -507,9 +478,6 @@ class DirectoryTreeDiffer:
 
   def file_del (self,oldobj,files):
     oldobj.deleted=True
-    #self.applydiffs_file.write("DEL /F \"")
-    #self.applydiffs_file.write(oldobj.relname)
-    #self.applydiffs_file.write("\"\n")
 
   def file_modified (self,oldobj,newobj,files):
     self.file_gen(newobj,files)
