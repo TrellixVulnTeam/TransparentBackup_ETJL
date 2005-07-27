@@ -18,6 +18,10 @@ import xml.sax.saxutils
 
 
 
+TMPDIR=".tmp"
+
+
+
 def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>]"
   (optlist,leftargs)=getopt.getopt(args,"b:d:o:",["backup-source=","diff-dtml=","output="])
@@ -186,8 +190,10 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
 
 class Object:
   def __init__ (self,leafname):
-    if leafname!=None and len(leafname)>0 and leafname[0]==chr(255):
+    if leafname==chr(255):
       sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with chr(255)")
+    elif leafname==TMPDIR:
+      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', because this clashes with the temporary directory name")
     self.leafname=leafname
 
   def __cmp__ (self,other):
@@ -312,6 +318,10 @@ class DirectoryTreeDiffer:
     self.builddiffs_file.close()
     self.applydiffs_file.close()
 
+  STATUS_UNMODIFIED=0
+  STATUS_MODIFIED=1
+  STATUS_DELETED=2
+
   def diff_pre (self,olddir,files):
     assert isinstance(olddir,Directory)
 
@@ -321,40 +331,85 @@ class DirectoryTreeDiffer:
         oldsubobj.copies=[]
       elif isinstance(oldsubobj,Directory):
         self.diff_pre(oldsubobj,files)
-      oldsubobj.deleted=False
 
   def diff_post (self,olddir):
+    self.applydiffs_file.write("REM Transfers copied files to temporary dirs\n")
+    self.diff_post_stage(olddir)
+    self.applydiffs_file.write("REM Transfers copied files to final destination\n")
+    self.diff_post_copy(olddir)
+    self.applydiffs_file.write("REM Clears away deleted objects and temporary dirs\n")
+    self.diff_post_clear(olddir)
+
+  def diff_post_stage (self,olddir):
+    assert isinstance(olddir,Directory)
+
+    tmpdir=None
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,File):
+        if len(oldsubobj.copies)>0:
+          if tmpdir==None:
+            tmpdir=os.path.join(olddir.relname,TMPDIR)
+            self.applydiffs_file.write("MKDIR \"")
+            self.applydiffs_file.write(tmpdir)
+            self.applydiffs_file.write("\"\n")
+          if oldsubobj.status==DirectoryTreeDiffer.STATUS_MODIFIED:
+            self.applydiffs_file.write("MOVE \"")
+          elif oldsubobj.status==DirectoryTreeDiffer.STATUS_DELETED:
+            self.applydiffs_file.write("MOVE \"")
+            oldsubobj.status=DirectoryTreeDiffer.STATUS_MODIFIED
+          else:
+            self.applydiffs_file.write("COPY \"")
+          self.applydiffs_file.write(oldsubobj.relname)
+          self.applydiffs_file.write("\" \"")
+          self.applydiffs_file.write(os.path.join(tmpdir,oldsubobj.leafname))
+          self.applydiffs_file.write("\"\n")
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,Directory):
+        self.diff_post_stage(oldsubobj)
+    olddir.tmpdir=tmpdir
+
+  def diff_post_copy (self,olddir):
     assert isinstance(olddir,Directory)
 
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,File):
-        if len(oldsubobj.copies)==0:
-          if oldsubobj.deleted==True:
-            self.applydiffs_file.write("DEL /F \"")
-            self.applydiffs_file.write(oldsubobj.relname)
-            self.applydiffs_file.write("\"\n")
-        else:
+        if len(oldsubobj.copies)>0:
+          tmpname=os.path.join(olddir.tmpdir,oldsubobj.leafname)
           for copy in oldsubobj.copies[0:-1]:
             self.applydiffs_file.write("COPY \"")
-            self.applydiffs_file.write(oldsubobj.relname)
+            self.applydiffs_file.write(tmpname)
             self.applydiffs_file.write("\" \"")
             self.applydiffs_file.write(copy.relname)
             self.applydiffs_file.write("\"\n")
-          if oldsubobj.deleted==True:
-            self.applydiffs_file.write("MOVE \"")
-          else:
-            self.applydiffs_file.write("COPY \"")
-          self.applydiffs_file.write(oldsubobj.relname)
+          self.applydiffs_file.write("MOVE \"")
+          self.applydiffs_file.write(tmpname)
           self.applydiffs_file.write("\" \"")
           self.applydiffs_file.write(oldsubobj.copies[-1].relname)
           self.applydiffs_file.write("\"\n")
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,Directory):
-        self.diff_post(oldsubobj)
-        if oldsubobj.deleted==True:
+        self.diff_post_copy(oldsubobj)
+
+  def diff_post_clear (self,olddir):
+    assert isinstance(olddir,Directory)
+
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,File):
+        if oldsubobj.status==DirectoryTreeDiffer.STATUS_DELETED:
+          self.applydiffs_file.write("DEL /F \"")
+          self.applydiffs_file.write(oldsubobj.relname)
+          self.applydiffs_file.write("\"\n")
+    for oldsubobj in olddir.subobjs:
+      if isinstance(oldsubobj,Directory):
+        self.diff_post_clear(oldsubobj)
+        if oldsubobj.status==DirectoryTreeDiffer.STATUS_DELETED:
           self.applydiffs_file.write("RMDIR \"")
           self.applydiffs_file.write(oldsubobj.relname)
           self.applydiffs_file.write("\"\n")
+    if olddir.tmpdir!=None:
+      self.applydiffs_file.write("RMDIR \"")
+      self.applydiffs_file.write(olddir.tmpdir)
+      self.applydiffs_file.write("\"\n")
 
   def diff_dir (self,olddir,newdir,files):
     assert olddir.leafname==newdir.leafname
@@ -399,7 +454,7 @@ class DirectoryTreeDiffer:
     newindex=1
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
-        # An directory still exists
+        # An old directory still exists
         self.dir_unmodified(old,new,files)
         self.diff_dir(old,new,files)
         old=oldsubobjs[oldindex]
@@ -456,9 +511,10 @@ class DirectoryTreeDiffer:
     self.applydiffs_file.write("\"\n")
 
   def dir_del (self,oldobj,files):
-    oldobj.deleted=True
+    oldobj.status=DirectoryTreeDiffer.STATUS_DELETED
 
   def dir_unmodified (self,oldobj,newobj,files):
+    oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
     self.builddiffs_file.write("MKDIR \"")
     self.builddiffs_file.write(newobj.relname)
     self.builddiffs_file.write("\"\n")
@@ -477,13 +533,14 @@ class DirectoryTreeDiffer:
       oldobj.copies.append(newobj)
 
   def file_del (self,oldobj,files):
-    oldobj.deleted=True
+    oldobj.status=DirectoryTreeDiffer.STATUS_DELETED;
 
   def file_modified (self,oldobj,newobj,files):
+    oldobj.status=DirectoryTreeDiffer.STATUS_MODIFIED;
     self.file_gen(newobj,files)
 
   def file_unmodified (self,oldobj,newobj,files):
-    pass
+    oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED;
 
 
 

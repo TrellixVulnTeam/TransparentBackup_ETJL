@@ -5,6 +5,7 @@
     <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
     <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D>
     <FILE name="Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
+    <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19>
     <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
     <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC>
   </DIR>
@@ -20,6 +21,7 @@
   </DIR>
   <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D>
   <FILE name="Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
+  <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4>
   <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC>
   <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
 </DTML>

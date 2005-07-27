@@ -4,6 +4,7 @@
     <FILE name="Created File.txt" size=25 md5sum=5C68044613311537CC2A69DBA70264FD>
     <FILE name="New Moved and Edited File.txt" size=132 md5sum=B45D7B7DE23447352B6F5B3EB7BC63D1>
     <FILE name="New Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
+    <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4>
     <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
     <FILE name="Unmoved and Edited File.txt" size=55 md5sum=DB19E7E7E42D9668759F0311587A7E5A>
   </DIR>
@@ -26,6 +27,7 @@
   </DIR>
   <FILE name="New Moved and Edited File.txt" size=139 md5sum=FD944939F2734896B09A5202BA1476CF>
   <FILE name="New Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
+  <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19>
   <FILE name="Unmoved and Edited File.txt" size=53 md5sum=DE76CB919BC4285BB6892FB0BDCD5E50>
   <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
 </DTML>
