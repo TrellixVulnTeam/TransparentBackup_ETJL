@@ -13,3 +13,5 @@ MKDIR ".\New Moved Subdirectory"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src1\.\New Moved Subdirectory\Created File.txt" ".\New Moved Subdirectory\Created File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src1\.\New Moved Subdirectory\Double Cross-Moved and Edited File.txt" ".\New Moved Subdirectory\Double Cross-Moved and Edited File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src1\.\New Moved Subdirectory\Moved and Edited File.txt" ".\New Moved Subdirectory\Moved and Edited File.txt"
+REM Diff set file count: 11
+REM Diff set total bytes: 1010

@@ -311,10 +311,14 @@ class DirectoryTreeDiffer:
     self.applydiffs_file=open(os.path.join(output_pathname,"!pre_applydiffs.bat"),"wb")
     self.builddiffs_file.write("REM Copies files to be backed up to the current directory\n")
     self.applydiffs_file.write("REM Prepares the previous state of the backup set, rooted in the current directory, for having new files copied over it\n")
+    self.builddiffs_files_count=0
+    self.builddiffs_files_size=0
     files={}
     self.diff_pre(oldtree.root,files)
     self.diff_dir(oldtree.root,newtree.root,files)
     self.diff_post(oldtree.root)
+    self.builddiffs_file.write("REM Diff set file count: "+str(self.builddiffs_files_count)+"\n")
+    self.builddiffs_file.write("REM Diff set total bytes: "+str(self.builddiffs_files_size)+"\n")
     self.builddiffs_file.close()
     self.applydiffs_file.close()
 
@@ -528,6 +532,8 @@ class DirectoryTreeDiffer:
       self.builddiffs_file.write("\" \"")
       self.builddiffs_file.write(newobj.relname)
       self.builddiffs_file.write("\"\n")
+      self.builddiffs_files_count=self.builddiffs_files_count+1
+      self.builddiffs_files_size=self.builddiffs_files_size+newobj.signature.size
     else:
       # The new file is a copy of an old one
       oldobj.copies.append(newobj)

@@ -21,3 +21,5 @@ MKDIR ".\Moved Subdirectory"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Deleted File.txt" ".\Moved Subdirectory\Deleted File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Moved and Edited File.txt" ".\Moved Subdirectory\Moved and Edited File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Moved and Unedited File.txt" ".\Moved Subdirectory\Moved and Unedited File.txt"
+REM Diff set file count: 19
+REM Diff set total bytes: 1380
