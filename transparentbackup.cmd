@@ -23,13 +23,14 @@ TMPDIR=".tmp"
 
 
 def main (args):
-  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>]"
-  (optlist,leftargs)=getopt.getopt(args,"b:d:o:",["backup-source=","diff-dtml=","output="])
+  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>]"
+  (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype="])
   if len(leftargs)>0:
     sys.exit("Unknown arguments on command line ('"+leftargs+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
   opt_output=None
+  opt_scripttype=None
   for (option,value) in optlist:
     if option in ("-b","--backup-source"):
       opt_backup_source=value
@@ -37,12 +38,16 @@ def main (args):
       opt_diff_dtml=value
     if option in ("-o","--output"):
       opt_output=value
+    if option in ("-s","--scripttype"):
+      opt_scripttype=value
   if opt_backup_source==None:
     sys.exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
     sys.exit("Backup source path (-b) is not a directory\n"+syntax)
   if opt_output==None:
     sys.exit("No output path (-o) supplied\n"+syntax)
+  if opt_scripttype==None:
+    sys.exit("No script type (-s) supplied\n"+syntax)
   if not os.path.isdir(opt_output):
     sys.exit("Output path (-b) is not a directory\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
@@ -54,18 +59,18 @@ def main (args):
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
-  transparentbackup(opt_backup_source,opt_diff_dtml,opt_output)
+  transparentbackup(opt_backup_source,opt_diff_dtml,opt_output,opt_scripttype)
 
 
 
-def transparentbackup (new_pathname,old_dtml,output_pathname):
+def transparentbackup (new_pathname,old_dtml,output_pathname,scripttype):
   if old_dtml==None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
   newtree=DirectoryTree.gen_fs(new_pathname)
   DirectoryTree.relname_cache=None
-  ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname)
+  ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttype)
   newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
 
 
@@ -464,7 +469,7 @@ class ScriptFile:
 
 class BatchFile(ScriptFile):
   def __init__ (self,filename):
-    self.file=open(filename,"wb")
+    self.file=open(filename+".bat","wb")
 
   def comment (self,body):
     self.file.write("REM ")
@@ -505,12 +510,69 @@ class BatchFile(ScriptFile):
 
 
 
+class BashScript(ScriptFile):
+  def esc (s):
+    return s.replace("\\","\\\\").replace("$","\\$").replace("`","\\$").replace("\"","\\\"")
+  esc=staticmethod(esc)
+
+  def winpathmap (path):
+    if len(path)>1 and path[0].isalpha() and path[1]==":":
+      path="/cygdrive/"+path[0].lower()+path[2:]
+    return path.replace("\\","/")
+  winpathmap=staticmethod(winpathmap)
+
+  def __init__ (self,filename):
+    self.file=open(filename+".sh","wb")
+
+  def comment (self,body):
+    self.file.write("# ")
+    self.file.write(body)
+    self.file.write("\n")
+
+  def mkdir (self,name):
+    self.file.write("mkdir \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(name)))
+    self.file.write("\"\n")
+
+  def rmdir (self,name):
+    self.file.write("rmdir \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(name)))
+    self.file.write("\"\n")
+
+  def cp (self,src,dst):
+    self.file.write("cp \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(src)))
+    self.file.write("\" \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(dst)))
+    self.file.write("\"\n")
+
+  def mv (self,src,dst):
+    self.file.write("mv \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(src)))
+    self.file.write("\" \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(dst)))
+    self.file.write("\"\n")
+
+  def rm (self,name):
+    self.file.write("rm -f \"")
+    self.file.write(BashScript.esc(BashScript.winpathmap(name)))
+    self.file.write("\"\n")
+
+  def close (self):
+    self.file.close()
+
+
+
 class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
-  def diff (self,oldtree,newtree,new_pathname,output_pathname):
+  def diff (self,oldtree,newtree,new_pathname,output_pathname,scripttype):
     self.new_pathname=new_pathname
-    self.builddiffs_file=BatchFile(os.path.join(output_pathname,"!builddiffs.bat"))
+    name=os.path.join(output_pathname,"!builddiffs")
+    self.builddiffs_file=eval(scripttype+"(name)")
+    assert isinstance(self.builddiffs_file,ScriptFile)
     self.builddiffs_file.comment("Copies files to be backed up to the current directory")
-    self.applydiffs_file=BatchFile(os.path.join(output_pathname,"!pre_applydiffs.bat"))
+    name=os.path.join(output_pathname,"!pre_applydiffs")
+    self.applydiffs_file=eval(scripttype+"(name)")
+    assert isinstance(self.applydiffs_file,ScriptFile)
     self.applydiffs_file.comment("Prepares the previous state of the backup set, rooted in the current directory, for having new files copied over it")
     self.builddiffs_files_count=0
     self.builddiffs_files_size=0
