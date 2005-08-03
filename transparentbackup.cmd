@@ -224,6 +224,7 @@ sentinelobj=SentinelObject()
 class Directory(Object):
   def __init__ (self,leafname,subobjs):
     Object.__init__(self,leafname)
+    #print "Creating Directory '"+str(leafname)+"'"
     self.subobjs=subobjs
 
   def writedtml (self,file,depth):
@@ -241,6 +242,7 @@ class Directory(Object):
 class File(Object):
   def __init__ (self,leafname,signature):
     Object.__init__(self,leafname)
+    #print "Creating File '"+str(leafname)+"'"
     self.signature=signature
 
   def writedtml (self,file,depth):
@@ -263,7 +265,9 @@ class Signature:
     self.md5sum=md5sum_hexstring.upper()
 
   def gen_fs (pathname):
+    #print "Creating Signature for '"+str(pathname)+"'"
     size=os.stat(pathname).st_size
+    #print "  size is "+str(size)
     md5sum=md5.new()
     file=open(pathname,"rb")
     consumed=0
@@ -276,6 +280,7 @@ class Signature:
     file.close()
     if consumed!=size:
       sys.exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
+    #print "  md5sum is "+md5sum.hexdigest()
     return Signature(size,md5sum.hexdigest())
   gen_fs=staticmethod(gen_fs)
 
@@ -470,6 +475,7 @@ class ScriptFile:
 class BatchFile(ScriptFile):
   def __init__ (self,filename):
     self.file=open(filename+".bat","wb")
+    self.file.write("chcp 1252\n")
 
   def comment (self,body):
     self.file.write("REM ")
