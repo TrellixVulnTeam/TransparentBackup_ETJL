@@ -1,10 +1,11 @@
 @setlocal enableextensions & I:\Apps\PROGRA~1\PYTHON~1.4\python.exe -x "%~f0" "%*" & goto :EOF
 #  -------------------------------------------------------------------
-#  Transparent Backup V1.00                       PYTHON COMPONENTS
+#  Transparent Backup 1.0.0                       PYTHON COMPONENTS
 #  © Geoff Crossland 2005
 #
-#  V1.00 : Compares a directory tree with a DTML file and creates
-#          data about the differences between them.
+#  1.0.0:
+#  Compares a directory tree with a DTML file and creates data
+#  about the differences between them.
 # -----------------------------------------------------------------  #
 import time
 import sys
