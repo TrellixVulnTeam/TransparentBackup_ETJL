@@ -1,4 +1,3 @@
-@setlocal enableextensions & I:\Apps\PROGRA~1\PYTHON~1.4\python.exe -x "%~f0" "%*" & goto :EOF
 #  -------------------------------------------------------------------
 #  Transparent Backup 1.0.0                       PYTHON COMPONENTS
 #  © Geoff Crossland 2005
