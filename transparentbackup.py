@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 #  -------------------------------------------------------------------
 #  Transparent Backup 1.0.0                       PYTHON COMPONENTS
 #  © Geoff Crossland 2005
