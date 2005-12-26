@@ -1,3 +1,4 @@
+chcp 1252
 REM Copies files to be backed up to the current directory
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src1\.\Created File.txt" ".\Created File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src1\.\Cross-Moved and Edited File.txt" ".\Cross-Moved and Edited File.txt"
