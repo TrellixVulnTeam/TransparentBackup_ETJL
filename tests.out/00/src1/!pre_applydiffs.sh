@@ -1,4 +1,4 @@
-# Prepares the previous state of the backup set, rooted in the current directory, for having new files copied over it
+# Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
 mkdir "./Created Subdirectory"
 mkdir "./New Moved Subdirectory"
 # Transfers copied files to temporary dirs
