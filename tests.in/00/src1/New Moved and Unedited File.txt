@@ -1,1 +1,1 @@
-This file will be unedited, but moved in the same dir (with prefix 'Now ').
+This root file will be unedited, but moved in the same dir (with prefix 'Now ').

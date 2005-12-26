@@ -9,6 +9,7 @@ cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src
 mkdir "./A Subdirectory"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./A Subdirectory/Cross-Moved and Edited File.txt" "./A Subdirectory/Cross-Moved and Edited File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./A Subdirectory/Cross-Moved and Unedited File.txt" "./A Subdirectory/Cross-Moved and Unedited File.txt"
+cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./A Subdirectory/Moved and Unedited File.txt" "./A Subdirectory/Moved and Unedited File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./A Subdirectory/Swapped File.txt" "./A Subdirectory/Swapped File.txt"
 mkdir "./Deleted Subdirectory"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./Deleted Subdirectory/Deleted File.txt" "./Deleted Subdirectory/Deleted File.txt"
@@ -16,5 +17,5 @@ mkdir "./Moved Subdirectory"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./Moved Subdirectory/Deleted File.txt" "./Moved Subdirectory/Deleted File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./Moved Subdirectory/Moved and Edited File.txt" "./Moved Subdirectory/Moved and Edited File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src0/./Moved Subdirectory/Moved and Unedited File.txt" "./Moved Subdirectory/Moved and Unedited File.txt"
-# Diff set file count: 14
-# Diff set total bytes: 1075
+# Diff set file count: 15
+# Diff set total bytes: 1156
