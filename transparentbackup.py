@@ -318,20 +318,9 @@ class Signature:
 
 
 class DirectoryTreeDiffer:
-  def xdiff (self,oldtree,newtree,files):
-    self.diff_pre(oldtree.root,files)
-    self.diff_dir(oldtree.root,newtree.root,files)
-    self.diff_post(oldtree.root)
-
   STATUS_UNMODIFIED=0
   STATUS_MODIFIED=1
   STATUS_DELETED=2
-
-  def diff_pre (self,olddir,files):
-    raise NotImplementedError
-
-  def diff_post (self,olddir):
-    raise NotImplementedError
 
   def diff_dir (self,olddir,newdir,files):
     assert olddir.leafname==newdir.leafname
@@ -592,7 +581,18 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
 
     self.builddiffs_files_count=0
     self.builddiffs_files_size=0
-    self.xdiff(oldtree,newtree,ScriptDirectoryTreeDiffer.Files())
+    files=ScriptDirectoryTreeDiffer.Files()
+    self.diff_pre_old(oldtree.root,files.oldfiles)
+    self.diff_pre_new(newtree.root)
+    self.diff_dir(oldtree.root,newtree.root,files)
+    self.preapplydiffs_file.comment("Transfers copied files to temporary dirs")
+    self.diff_post_stage(oldtree.root)
+    self.preapplydiffs_file.comment("Transfers copied files to final destination")
+    self.diff_post_copy(oldtree.root)
+    self.preapplydiffs_file.comment("Clears away deleted objects and temporary dirs")
+    self.diff_post_clear(oldtree.root)
+    self.postapplydiffs_file.comment("Copies duplicated updated files to all destinations")
+    self.diff_post_copynew(newtree.root)
     self.builddiffs_file.comment("Diff set file count: "+str(self.builddiffs_files_count))
     self.builddiffs_file.comment("Diff set total bytes: "+str(self.builddiffs_files_size))
 
@@ -600,23 +600,24 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
     self.preapplydiffs_file.close()
     self.postapplydiffs_file.close()
 
-  def diff_pre (self,olddir,files):
+  def diff_pre_old (self,olddir,files):
     assert isinstance(olddir,Directory)
 
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,File):
-        files.oldfiles[oldsubobj.signature]=oldsubobj
+        files[oldsubobj.signature]=oldsubobj
         oldsubobj.copies=[]
       elif isinstance(oldsubobj,Directory):
-        self.diff_pre(oldsubobj,files)
+        self.diff_pre_old(oldsubobj,files)
 
-  def diff_post (self,olddir):
-    self.preapplydiffs_file.comment("Transfers copied files to temporary dirs")
-    self.diff_post_stage(olddir)
-    self.preapplydiffs_file.comment("Transfers copied files to final destination")
-    self.diff_post_copy(olddir)
-    self.preapplydiffs_file.comment("Clears away deleted objects and temporary dirs")
-    self.diff_post_clear(olddir)
+  def diff_pre_new (self,newdir):
+    assert isinstance(newdir,Directory)
+
+    for newsubobj in newdir.subobjs:
+      if isinstance(newsubobj,File):
+        newsubobj.copies=[]
+      elif isinstance(newsubobj,Directory):
+        self.diff_pre_new(newsubobj)
 
   def diff_post_stage (self,olddir):
     assert isinstance(olddir,Directory)
@@ -670,6 +671,17 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
     if olddir.tmpdir!=None:
       self.preapplydiffs_file.rmdir(olddir.tmpdir)
 
+  def diff_post_copynew (self,newdir):
+    assert isinstance(newdir,Directory)
+
+    for newsubobj in newdir.subobjs:
+      if isinstance(newsubobj,File):
+        for copy in newsubobj.copies:
+          self.postapplydiffs_file.cp(newsubobj.relname,copy.relname)
+    for newsubobj in newdir.subobjs:
+      if isinstance(newsubobj,Directory):
+        self.diff_post_copynew(newsubobj)
+
   def dir_gen (self,newobj,files):
     self.builddiffs_file.mkdir(newobj.relname)
     self.preapplydiffs_file.mkdir(newobj.relname)
@@ -682,15 +694,19 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
     self.builddiffs_file.mkdir(newobj.relname)
 
   def file_gen (self,newobj,files):
-    oldobj=files.oldfiles.get(newobj.signature,None)
-    if oldobj==None:
+    obj=files.oldfiles.get(newobj.signature,None)
+    if obj==None:
       # The new file is not a direct copy of an old one
+      obj=files.newfiles.get(newobj.signature,None)
+    if obj!=None:
+      # The new file is a copy of an old one or another new one
+      obj.copies.append(newobj)
+    else:
+      # The new file is neither a direct copy of an old one nor of a new one
       self.builddiffs_file.cp(os.path.join(self.new_pathname,newobj.relname),newobj.relname)
       self.builddiffs_files_count=self.builddiffs_files_count+1
       self.builddiffs_files_size=self.builddiffs_files_size+newobj.signature.size
-    else:
-      # The new file is a copy of an old one
-      oldobj.copies.append(newobj)
+      files.newfiles[newobj.signature]=newobj
 
   def file_del (self,oldobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_DELETED

@@ -10,8 +10,7 @@ cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src
 mkdir "./Created Subdirectory"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src1/./Created Subdirectory/Created File.txt" "./Created Subdirectory/Created File.txt"
 mkdir "./New Moved Subdirectory"
-cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src1/./New Moved Subdirectory/Created File.txt" "./New Moved Subdirectory/Created File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src1/./New Moved Subdirectory/Double Cross-Moved and Edited File.txt" "./New Moved Subdirectory/Double Cross-Moved and Edited File.txt"
 cp "/cygdrive/i/--Geoff--/Software/apps/Transparent Backup.trunk/tests.in/00/src1/./New Moved Subdirectory/Moved and Edited File.txt" "./New Moved Subdirectory/Moved and Edited File.txt"
-# Diff set file count: 11
-# Diff set total bytes: 1010
+# Diff set file count: 10
+# Diff set total bytes: 981

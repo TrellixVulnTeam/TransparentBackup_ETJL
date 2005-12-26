@@ -10,17 +10,12 @@ COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Unm
 MKDIR ".\A Subdirectory"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Cross-Moved and Edited File.txt" ".\A Subdirectory\Cross-Moved and Edited File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Cross-Moved and Unedited File.txt" ".\A Subdirectory\Cross-Moved and Unedited File.txt"
-COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Deleted File.txt" ".\A Subdirectory\Deleted File.txt"
-COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Moved and Edited File.txt" ".\A Subdirectory\Moved and Edited File.txt"
-COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Moved and Unedited File.txt" ".\A Subdirectory\Moved and Unedited File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Swapped File.txt" ".\A Subdirectory\Swapped File.txt"
-COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Unmoved & Unedited File.txt" ".\A Subdirectory\Unmoved & Unedited File.txt"
-COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\A Subdirectory\Unmoved and Edited File.txt" ".\A Subdirectory\Unmoved and Edited File.txt"
 MKDIR ".\Deleted Subdirectory"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Deleted Subdirectory\Deleted File.txt" ".\Deleted Subdirectory\Deleted File.txt"
 MKDIR ".\Moved Subdirectory"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Deleted File.txt" ".\Moved Subdirectory\Deleted File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Moved and Edited File.txt" ".\Moved Subdirectory\Moved and Edited File.txt"
 COPY "I:\--Geoff--\Software\apps\Transparent Backup.trunk\tests.in\00\src0\.\Moved Subdirectory\Moved and Unedited File.txt" ".\Moved Subdirectory\Moved and Unedited File.txt"
-REM Diff set file count: 19
-REM Diff set total bytes: 1380
+REM Diff set file count: 14
+REM Diff set total bytes: 1075
