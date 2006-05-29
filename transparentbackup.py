@@ -78,6 +78,13 @@ def transparentbackup (new_pathname,old_dtml,output_pathname,scripttype):
 
 
 
+def latin1isprintable (index):
+  assert index>=0
+  assert index<256
+  return (index & 0x60)!=0
+
+
+
 class DirectoryTree:
   relname_cache={}
   def relname_get (relname):
@@ -109,6 +116,9 @@ class DirectoryTree:
     i=0
     while i<len(subobjs):
       leafname=subobjs[i]
+      for chr in leafname:
+        if not latin1isprintable(ord(chr)):
+          sys.exit("Error in DirectoryTree: unable to support file or directory with name '"+leafname+"', which contains a control character (might be a Unicode name which happens to be valid Windows-1252 but not valid Latin-1)")
       pathname=os.path.join(source_pathname,leafname)
       relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
       if os.path.isdir(pathname):
