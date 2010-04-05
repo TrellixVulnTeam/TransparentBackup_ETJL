@@ -49,10 +49,10 @@ def main (args):
     sys.exit("Backup source path (-b) is not a directory\n"+syntax)
   if opt_output==None:
     sys.exit("No output path (-o) supplied\n"+syntax)
+  if not os.path.isdir(opt_output):
+    sys.exit("Output path (-o) is not a directory\n"+syntax)
   if opt_scripttype==None:
     sys.exit("No script type (-s) supplied\n"+syntax)
-  if not os.path.isdir(opt_output):
-    sys.exit("Output path (-b) is not a directory\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
   if opt_diff_dtml!=None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
