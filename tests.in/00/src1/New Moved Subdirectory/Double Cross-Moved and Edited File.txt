@@ -1,2 +1,0 @@
-This file will be both edited and moved into another dir (with prefix 'Now '). It will probably appear to be totally new.
-Here is another edited copy, in another subdirectory

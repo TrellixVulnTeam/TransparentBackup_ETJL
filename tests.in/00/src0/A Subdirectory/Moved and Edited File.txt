@@ -1,1 +1,0 @@
-This file will be both edited and moved in the same dir (with prefix 'Now '). It will probably appear to be totally new.
