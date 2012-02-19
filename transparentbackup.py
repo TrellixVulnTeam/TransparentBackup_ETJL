@@ -1,11 +1,13 @@
 # -*- coding: iso-8859-1 -*-
 #  -------------------------------------------------------------------
-#  Transparent Backup 1.0.0                       PYTHON COMPONENTS
+#  Transparent Backup 1.1.0                       PYTHON COMPONENTS
 #  © Geoff Crossland 2005
 #
 #  1.0.0:
 #  Compares a directory tree with a DTML file and creates data
 #  about the differences between them.
+#
+#  1.1.0:
 # -----------------------------------------------------------------  #
 import time
 import sys
