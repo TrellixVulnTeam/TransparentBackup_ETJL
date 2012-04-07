@@ -1,18 +1,18 @@
 # Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
-mkdir "./Created Subdirectory"
-mkdir "./New Moved Subdirectory"
+mkdir --parents "./Created Subdirectory"
+mkdir --parents "./New Moved Subdirectory"
 # Transfers copied files to temporary dirs
-mkdir "./.tmp"
+mkdir --parents "./.tmp"
 cp "./Another Unmoved and Unedited File.txt" "./.tmp/Another Unmoved and Unedited File.txt"
 cp "./Lying File.txt" "./.tmp/Lying File.txt"
 mv "./Moved and Unedited File.txt" "./.tmp/Moved and Unedited File.txt"
 mv "./Swapped File.txt" "./.tmp/Swapped File.txt"
 cp "./Unmoved and Unedited File.txt" "./.tmp/Unmoved and Unedited File.txt"
-mkdir "./A Subdirectory/.tmp"
+mkdir --parents "./A Subdirectory/.tmp"
 mv "./A Subdirectory/Cross-Moved and Unedited File.txt" "./A Subdirectory/.tmp/Cross-Moved and Unedited File.txt"
 mv "./A Subdirectory/Moved and Unedited File.txt" "./A Subdirectory/.tmp/Moved and Unedited File.txt"
 mv "./A Subdirectory/Swapped File.txt" "./A Subdirectory/.tmp/Swapped File.txt"
-mkdir "./Moved Subdirectory/.tmp"
+mkdir --parents "./Moved Subdirectory/.tmp"
 mv "./Moved Subdirectory/Moved and Unedited File.txt" "./Moved Subdirectory/.tmp/Moved and Unedited File.txt"
 # Transfers copied files to final destination
 mv "./.tmp/Another Unmoved and Unedited File.txt" "./Copied Another Unmoved and Unedited File.txt"

@@ -29,7 +29,7 @@ def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>]"
   (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype="])
   if len(leftargs)>0:
-    sys.exit("Unknown arguments on command line ('"+leftargs+"')\n"+syntax)
+    sys.exit("Unknown arguments on command line ('"+str(leftargs)+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
   opt_output=None
@@ -86,6 +86,8 @@ def latin1isprintable (index):
   return (index & 0x60)!=0
 
 
+quick=0
+slow=0
 
 class DirectoryTree:
   relname_cache={}
@@ -112,6 +114,7 @@ class DirectoryTree:
   gen_fs=staticmethod(gen_fs)
 
   def gen_fs_dir (source_leafname,source_pathname,source_relname,oldtree):
+    global quick,slow
     oldtreeSubobjs={}
     if oldtree:
       assert isinstance(oldtree,Directory)
@@ -139,9 +142,11 @@ class DirectoryTree:
         if oldtreeSubobj and oldtreeSubobj.weakSignature==weakSignature:
           #print "assuming that "+relname+" is unchanged"
           strongSignature=oldtreeSubobj.strongSignature
+          quick+=1
         else:
           #print "recalculating strong sig for "+relname
           strongSignature=StrongSignature.gen_fs(pathname)
+          slow+=1
         subobj=File(leafname,weakSignature,strongSignature)
       subobj.relname=relname
       subobjs[i]=subobj
@@ -298,10 +303,8 @@ class WeakSignature:
   def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in WeakSignature: initialised with size '"+size+"', which is invalid")
+      sys.exit("Error in WeakSignature: initialised with size '"+str(size)+"', which is invalid")
     self.lastModifiedTime=int(lastModifiedTime)
-    if self.lastModifiedTime<0:
-      sys.exit("Error in WeakSignature: initialised with lastModifiedTime '"+lastModifiedTime+"', which is invalid")
 
   def gen_fs (pathname):
     #print "Creating WeakSignature for '"+str(pathname)+"'"
@@ -359,7 +362,7 @@ class StrongSignature:
   def __init__ (self,size,md5sum):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in StrongSignature: initialised with size '"+size+"', which is invalid")
+      sys.exit("Error in StrongSignature: initialised with size '"+str(size)+"', which is invalid")
     self.md5sum=md5sum
 
   def gen_fs (pathname):
@@ -431,7 +434,7 @@ class DirectoryTreeDiffer:
       if old.leafname==new.leafname:
         # An old file still exists
         if old.strongSignature!=new.strongSignature:
-          self.file_modified(old,new,files)
+          self.file_modified(old,new,newdir,files)
         else:
           self.file_unmodified(old,new,files)
         old=oldsubobjs[oldindex]
@@ -445,7 +448,7 @@ class DirectoryTreeDiffer:
         oldindex=oldindex+1
       else:
         # A new file has been created
-        self.file_gen(new,files)
+        self.file_gen(new,newdir,files)
         new=newsubobjs[newindex]
         newindex=newindex+1
 
@@ -484,7 +487,7 @@ class DirectoryTreeDiffer:
     # First, process files
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,File)]
     for new in newsubobjs:
-      self.file_gen(new,files)
+      self.file_gen(new,newdir,files)
 
     # Then, process directories
     newsubobjs=[subobj for subobj in newdir.subobjs if isinstance(subobj,Directory)]
@@ -515,13 +518,13 @@ class DirectoryTreeDiffer:
   def dir_unmodified (self,oldobj,newobj,files):
     raise NotImplementedError
 
-  def file_gen (self,newobj,files):
+  def file_gen (self,newobj,newdir,files):
     raise NotImplementedError
 
   def file_del (self,oldobj,files):
     raise NotImplementedError
 
-  def file_modified (self,oldobj,newobj,files):
+  def file_modified (self,oldobj,newobj,newdir,files):
     raise NotImplementedError
 
   def file_unmodified (self,oldobj,newobj,files):
@@ -617,7 +620,7 @@ class BashScript(ScriptFile):
     self.file.write("\n")
 
   def mkdir (self,name):
-    self.file.write("mkdir \"")
+    self.file.write("mkdir --parents \"")
     self.file.write(BashScript.esc(BashScript.winpathmap(name)))
     self.file.write("\"\n")
 
@@ -776,7 +779,6 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
         self.diff_post_copynew(newsubobj)
 
   def dir_gen (self,newobj,files):
-    self.builddiffs_file.mkdir(newobj.relname)
     self.preapplydiffs_file.mkdir(newobj.relname)
 
   def dir_del (self,oldobj,files):
@@ -784,9 +786,8 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
 
   def dir_unmodified (self,oldobj,newobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
-    self.builddiffs_file.mkdir(newobj.relname)
 
-  def file_gen (self,newobj,files):
+  def file_gen (self,newobj,newdir,files):
     obj=files.oldfiles.get(newobj.strongSignature,None)
     if obj==None:
       # The new file is not a direct copy of an old one
@@ -796,6 +797,9 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
       obj.copies.append(newobj)
     else:
       # The new file is neither a direct copy of an old one nor of a new one
+      if not newdir.__dict__.has_key("inbuilddiffs"):
+        self.builddiffs_file.mkdir(os.path.dirname(newobj.relname))
+        newdir.inbuilddiffs=True
       self.builddiffs_file.cp(os.path.join(self.new_pathname,newobj.relname),newobj.relname)
       self.builddiffs_files_count=self.builddiffs_files_count+1
       self.builddiffs_files_size=self.builddiffs_files_size+newobj.strongSignature.size
@@ -804,9 +808,9 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
   def file_del (self,oldobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_DELETED
 
-  def file_modified (self,oldobj,newobj,files):
+  def file_modified (self,oldobj,newobj,newdir,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_MODIFIED
-    self.file_gen(newobj,files)
+    self.file_gen(newobj,newdir,files)
 
   def file_unmodified (self,oldobj,newobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
@@ -823,3 +827,4 @@ if __name__=="__main__":
   else:
     main(argv[1:])
   print "Took "+str(time.time()-start)+" secs"
+  print "Of "+str(quick+slow)+" files, "+str((quick*100)/(quick+slow))+"% didn't need to be re-hashed"

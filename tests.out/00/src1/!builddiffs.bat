@@ -1,5 +1,6 @@
 chcp 1252
 REM Copies files to be backed up to the current directory
+MKDIR "."
 COPY "T:\tests.in\00\src1\.\Created File.txt" ".\Created File.txt"
 COPY "T:\tests.in\00\src1\.\Cross-Moved and Edited File.txt" ".\Cross-Moved and Edited File.txt"
 COPY "T:\tests.in\00\src1\.\New Moved and Edited File.txt" ".\New Moved and Edited File.txt"

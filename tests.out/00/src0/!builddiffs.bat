@@ -1,5 +1,6 @@
 chcp 1252
 REM Copies files to be backed up to the current directory
+MKDIR "."
 COPY "T:\tests.in\00\src0\.\Another Unmoved and Unedited File.txt" ".\Another Unmoved and Unedited File.txt"
 COPY "T:\tests.in\00\src0\.\Deleted File.txt" ".\Deleted File.txt"
 COPY "T:\tests.in\00\src0\.\Moved and Edited File.txt" ".\Moved and Edited File.txt"
