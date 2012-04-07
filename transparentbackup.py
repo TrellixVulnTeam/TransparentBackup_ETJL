@@ -653,6 +653,85 @@ class BashScript(ScriptFile):
 
 
 
+def pathSplit (path):
+  r=[]
+  pathSplitImpl(r,path)
+  return r
+
+def pathSplitImpl (out,path):
+  (head,tail)=os.path.split(path)
+  if not head or head == path:
+    out.append(path)
+  else:
+    pathSplitImpl(out,head)
+    out.append(tail)
+
+
+
+class PythonScript(ScriptFile):
+  def __init__ (self,filename):
+    self.file=open(filename+".py","wb")
+    self.file.write(
+"""
+import os
+import os.path
+import shutil
+
+def mkdir(name):
+  p = os.path.join(*name)
+  if not os.path.isdir(p):
+    os.makedirs(p)
+
+def rmdir(name):
+  os.rmdir(os.path.join(*name))
+
+def cp(src, dst):
+  shutil.copy2(os.path.join(*src), os.path.join(*dst))
+
+def mv(src, dst):
+  shutil.move(os.path.join(*src), os.path.join(*dst))
+
+def rm(name):
+  os.remove(os.path.join(*name))
+
+""")
+
+  def comment (self,body):
+    self.file.write("# ")
+    self.file.write(body)
+    self.file.write("\n")
+
+  def writeCmd (self,fnName,*params):
+    self.file.write(fnName)
+    self.file.write("(")
+    first=True
+    for param in params:
+      if not first:
+        self.file.write(", ")
+      first=False
+      self.file.write(repr(tuple(pathSplit(param))))
+    self.file.write(")\n")
+
+  def mkdir (self,name):
+    self.writeCmd("mkdir",name)
+
+  def rmdir (self,name):
+    self.writeCmd("rmdir",name)
+
+  def cp (self,src,dst):
+    self.writeCmd("cp",src,dst)
+
+  def mv (self,src,dst):
+    self.writeCmd("mv",src,dst)
+
+  def rm (self,name):
+    self.writeCmd("rm",name)
+
+  def close (self):
+    self.file.close()
+
+
+
 class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
   class Files:
     def __init__ (self):
