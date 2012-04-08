@@ -89,6 +89,7 @@ def latin1isprintable (index):
   return (index & 0x60)!=0
 
 
+
 quick=0
 slow=0
 
@@ -938,12 +939,6 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
 
 if __name__=="__main__":
   start=time.time()
-  argv=sys.argv
-  if len(argv)<2:
-    main([])
-  elif len(argv)==2:
-    main(string.split(argv[1]))
-  else:
-    main(argv[1:])
+  main(sys.argv[1:])
   print "Took "+str(time.time()-start)+" secs"
   print "Of "+str(quick+slow)+" files, "+str((quick*100)/(quick+slow))+"% didn't need to be re-hashed"
