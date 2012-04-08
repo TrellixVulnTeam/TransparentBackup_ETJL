@@ -53,6 +53,9 @@ def main (args):
     sys.exit("Output path (-o) is not a directory\n"+syntax)
   if opt_scripttype==None:
     sys.exit("No script type (-s) supplied\n"+syntax)
+  scripttypeCls=sys.modules[__name__].__dict__.get(opt_scripttype)
+  if not isinstance(scripttypeCls, type) or ScriptFile not in scripttypeCls.__mro__:
+    sys.exit("Script type (-s) is not valid\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
   if opt_diff_dtml!=None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
@@ -64,18 +67,18 @@ def main (args):
 
   os.stat_float_times(True)
 
-  transparentbackup(opt_backup_source,opt_diff_dtml,opt_output,opt_scripttype)
+  transparentbackup(opt_backup_source,opt_diff_dtml,opt_output,scripttypeCls)
 
 
 
-def transparentbackup (new_pathname,old_dtml,output_pathname,scripttype):
+def transparentbackup (new_pathname,old_dtml,output_pathname,scripttypeCls):
   if old_dtml==None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
   newtree=DirectoryTree.gen_fs(new_pathname,oldtree)
   DirectoryTree.relname_cache=None
-  ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttype)
+  ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
 
 
@@ -89,7 +92,7 @@ def latin1isprintable (index):
 quick=0
 slow=0
 
-class DirectoryTree:
+class DirectoryTree(object):
   relname_cache={}
   def relname_get (relname):
     return DirectoryTree.relname_cache.setdefault(relname,relname)
@@ -229,7 +232,7 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
 
 
 
-class Object:
+class Object(object):
   def __init__ (self,leafname):
     if leafname==chr(255):
       sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with chr(255)")
@@ -247,7 +250,7 @@ class Object:
 
 
 
-class SentinelObject:
+class SentinelObject(object):
   def __init__ (self):
     self.leafname=chr(255)
 
@@ -299,7 +302,7 @@ class File(Object):
 
 
 
-class WeakSignature:
+class WeakSignature(object):
   def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
     if self.size<0:
@@ -358,7 +361,7 @@ def parseMd5sum(val):
 
 
 
-class StrongSignature:
+class StrongSignature(object):
   def __init__ (self,size,md5sum):
     self.size=int(size)
     if self.size<0:
@@ -413,7 +416,7 @@ class StrongSignature:
 
 
 
-class DirectoryTreeDiffer:
+class DirectoryTreeDiffer(object):
   STATUS_UNMODIFIED=0
   STATUS_MODIFIED=1
   STATUS_DELETED=2
@@ -532,7 +535,7 @@ class DirectoryTreeDiffer:
 
 
 
-class ScriptFile:
+class ScriptFile(object):
   def mkdir (self,name):
     raise NotImplementedError
 
@@ -557,7 +560,7 @@ class ScriptFile:
 
 
 class BatchFile(ScriptFile):
-  def __init__ (self,filename):
+  def __init__ (self,filename,forNow):
     self.file=open(filename+".bat","wb")
     self.file.write("chcp 1252\n")
 
@@ -611,7 +614,7 @@ class BashScript(ScriptFile):
     return path.replace("\\","/")
   winpathmap=staticmethod(winpathmap)
 
-  def __init__ (self,filename):
+  def __init__ (self,filename,forNow):
     self.file=open(filename+".sh","wb")
 
   def comment (self,body):
@@ -669,7 +672,7 @@ def pathSplitImpl (out,path):
 
 
 class PythonScript(ScriptFile):
-  def __init__ (self,filename):
+  def __init__ (self,filename,forNow):
     self.file=open(filename+".py","wb")
     self.file.write(
 """
@@ -738,20 +741,17 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
       self.oldfiles={}
       self.newfiles={}
 
-  def diff (self,oldtree,newtree,new_pathname,output_pathname,scripttype):
+  def diff (self,oldtree,newtree,new_pathname,output_pathname,scripttypeCls):
     self.new_pathname=new_pathname
 
     name=os.path.join(output_pathname,"!builddiffs")
-    self.builddiffs_file=eval(scripttype+"(name)")
-    assert isinstance(self.builddiffs_file,ScriptFile)
+    self.builddiffs_file=scripttypeCls(name,True)
     self.builddiffs_file.comment("Copies files to be backed up to the current directory")
     name=os.path.join(output_pathname,"!pre_applydiffs")
-    self.preapplydiffs_file=eval(scripttype+"(name)")
-    assert isinstance(self.preapplydiffs_file,ScriptFile)
+    self.preapplydiffs_file=scripttypeCls(name,False)
     self.preapplydiffs_file.comment("Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it")
     name=os.path.join(output_pathname,"!post_applydiffs")
-    self.postapplydiffs_file=eval(scripttype+"(name)")
-    assert isinstance(self.postapplydiffs_file,ScriptFile)
+    self.postapplydiffs_file=scripttypeCls(name,False)
     self.postapplydiffs_file.comment("Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state")
 
     self.builddiffs_files_count=0
