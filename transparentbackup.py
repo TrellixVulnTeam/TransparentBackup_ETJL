@@ -673,9 +673,41 @@ def pathSplitImpl (out,path):
 
 class PythonScript(ScriptFile):
   def __init__ (self,filename,forNow):
+    self.forNow=forNow
     self.file=open(filename+".py","wb")
-    self.file.write(
+    if forNow:
+      head="""
+
+import os
+import os.path
+import zipfile
+
+def mkdir(name):
+  pass
+
+z = None
+
+def startZip(p):
+  global z
+  z = zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED, True)
+
+def endZip():
+  z.close()
+
+def cp(src, dst):
+  z.write(os.path.join(*src), os.path.join(*dst))
+
+startZip("diffs.zip")
+
 """
+      tail="""
+
+endZip()
+
+"""
+    else:
+      head="""
+
 import os
 import os.path
 import shutil
@@ -697,7 +729,10 @@ def mv(src, dst):
 def rm(name):
   os.remove(os.path.join(*name))
 
-""")
+"""
+      tail=None
+    self.file.write(head.strip() + "\n\n")
+    self.tail=tail
 
   def comment (self,body):
     self.file.write("# ")
@@ -719,18 +754,23 @@ def rm(name):
     self.writeCmd("mkdir",name)
 
   def rmdir (self,name):
+    assert not self.forNow
     self.writeCmd("rmdir",name)
 
   def cp (self,src,dst):
     self.writeCmd("cp",src,dst)
 
   def mv (self,src,dst):
+    assert not self.forNow
     self.writeCmd("mv",src,dst)
 
   def rm (self,name):
+    assert not self.forNow
     self.writeCmd("rm",name)
 
   def close (self):
+    if self.tail:
+      self.file.write("\n" + self.tail.strip())
     self.file.close()
 
 

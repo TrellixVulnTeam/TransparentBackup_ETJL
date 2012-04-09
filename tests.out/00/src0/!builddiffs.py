@@ -1,24 +1,23 @@
-
 import os
 import os.path
-import shutil
+import zipfile
 
 def mkdir(name):
-  p = os.path.join(*name)
-  if not os.path.isdir(p):
-    os.makedirs(p)
+  pass
 
-def rmdir(name):
-  os.rmdir(os.path.join(*name))
+z = None
+
+def startZip(p):
+  global z
+  z = zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED, True)
+
+def endZip():
+  z.close()
 
 def cp(src, dst):
-  shutil.copy2(os.path.join(*src), os.path.join(*dst))
+  z.write(os.path.join(*src), os.path.join(*dst))
 
-def mv(src, dst):
-  shutil.move(os.path.join(*src), os.path.join(*dst))
-
-def rm(name):
-  os.remove(os.path.join(*name))
+startZip("diffs.zip")
 
 # Copies files to be backed up to the current directory
 mkdir(('.',))
@@ -42,3 +41,5 @@ cp(('T:\\', 'tests.in', '00', 'src0', '.', 'Moved Subdirectory', 'Moved and Edit
 cp(('T:\\', 'tests.in', '00', 'src0', '.', 'Moved Subdirectory', 'Moved and Unedited File.txt'), ('.', 'Moved Subdirectory', 'Moved and Unedited File.txt'))
 # Diff set file count: 15
 # Diff set total bytes: 1156
+
+endZip()
