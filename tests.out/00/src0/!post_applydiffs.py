@@ -21,9 +21,9 @@ def rm(name):
 
 # Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state
 # Copies duplicated updated files to all destinations
-cp(('.', 'Deleted File.txt'), ('.', 'Lying File.txt'))
-cp(('.', 'Deleted File.txt'), ('.', 'A Subdirectory', 'Deleted File.txt'))
-cp(('.', 'Deleted File.txt'), ('.', 'A Subdirectory', 'Moved Lying File.txt'))
-cp(('.', 'Moved and Edited File.txt'), ('.', 'A Subdirectory', 'Moved and Edited File.txt'))
-cp(('.', 'Unmoved and Edited File.txt'), ('.', 'A Subdirectory', 'Unmoved and Edited File.txt'))
-cp(('.', 'Unmoved and Unedited File.txt'), ('.', 'A Subdirectory', 'Unmoved & Unedited File.txt'))
+cp((u'.', u'Deleted File.txt'), (u'.', u'Lying File.txt'))
+cp((u'.', u'Deleted File.txt'), (u'.', u'A Subdirectory', u'Deleted File.txt'))
+cp((u'.', u'Deleted File.txt'), (u'.', u'A Subdirectory', u'Moved Lying File.txt'))
+cp((u'.', u'Moved and Edited File.txt'), (u'.', u'A Subdirectory', u'Moved and Edited File.txt'))
+cp((u'.', u'Unmoved and Edited File.txt'), (u'.', u'A Subdirectory', u'Unmoved and Edited File.txt'))
+cp((u'.', u'Unmoved and Unedited File.txt'), (u'.', u'A Subdirectory', u'Unmoved & Unedited File.txt'))

@@ -14,6 +14,7 @@ import sys
 import string
 import getopt
 import os
+import codecs
 import md5
 import cgi
 import sgmllib
@@ -21,7 +22,7 @@ import xml.sax.saxutils
 
 
 
-TMPDIR=".tmp"
+TMPDIR=u".tmp"
 
 
 
@@ -29,7 +30,7 @@ def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>]"
   (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype="])
   if len(leftargs)>0:
-    sys.exit("Unknown arguments on command line ('"+str(leftargs)+"')\n"+syntax)
+    sys.exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
   opt_output=None
@@ -37,10 +38,13 @@ def main (args):
   for (option,value) in optlist:
     if option in ("-b","--backup-source"):
       opt_backup_source=value
+      assert isinstance(opt_backup_source,unicode)
     if option in ("-d","--diff-dtml"):
       opt_diff_dtml=value
+      assert isinstance(opt_diff_dtml,unicode)
     if option in ("-o","--output"):
       opt_output=value
+      assert isinstance(opt_output,unicode)
     if option in ("-s","--scripttype"):
       opt_scripttype=value
   if opt_backup_source==None:
@@ -54,14 +58,14 @@ def main (args):
   if opt_scripttype==None:
     sys.exit("No script type (-s) supplied\n"+syntax)
   scripttypeCls=sys.modules[__name__].__dict__.get(opt_scripttype)
-  if not isinstance(scripttypeCls, type) or ScriptFile not in scripttypeCls.__mro__:
+  if not isinstance(scripttypeCls,type) or ScriptFile not in scripttypeCls.__mro__:
     sys.exit("Script type (-s) is not valid\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
   if opt_diff_dtml!=None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
 
   print "Backup source: "+opt_backup_source
-  print "DTML file: "+str(opt_diff_dtml)
+  print "DTML file: "+unicode(opt_diff_dtml)
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
@@ -79,14 +83,7 @@ def transparentbackup (new_pathname,old_dtml,output_pathname,scripttypeCls):
   newtree=DirectoryTree.gen_fs(new_pathname,oldtree)
   DirectoryTree.relname_cache=None
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
-  newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
-
-
-
-def latin1isprintable (index):
-  assert index>=0
-  assert index<256
-  return (index & 0x60)!=0
+  newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))
 
 
 
@@ -104,16 +101,16 @@ class DirectoryTree(object):
 
   def gen_empty ():
     root=Directory(None,[])
-    root.relname=DirectoryTree.relname_get(".")
+    root.relname=DirectoryTree.relname_get(u".")
     return DirectoryTree(root)
   gen_empty=staticmethod(gen_empty)
 
   def gen_fs (source_pathname,oldtree):
     (t,source_leafname)=os.path.split(source_pathname)
     if len(source_leafname)==0:
-      sys.exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if refering to a directory, omit this)")
-    root=DirectoryTree.gen_fs_dir(None,source_pathname,".",oldtree.root)
-    root.relname=DirectoryTree.relname_get(".")
+      sys.exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if referring to a directory, omit this)")
+    root=DirectoryTree.gen_fs_dir(None,source_pathname,u".",oldtree.root)
+    root.relname=DirectoryTree.relname_get(u".")
     return DirectoryTree(root)
   gen_fs=staticmethod(gen_fs)
 
@@ -129,9 +126,6 @@ class DirectoryTree(object):
     i=0
     while i<len(subobjs):
       leafname=subobjs[i]
-      for chr in leafname:
-        if not latin1isprintable(ord(chr)):
-          sys.exit("Error in DirectoryTree: unable to support file or directory with name '"+leafname+"', which contains a control character (might be a Unicode name which happens to be valid Windows-1252 but not valid Latin-1)")
       pathname=os.path.join(source_pathname,leafname)
       relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
       oldtreeSubobj=oldtreeSubobjs.get(leafname,None)
@@ -163,11 +157,11 @@ class DirectoryTree(object):
   gen_dtml=staticmethod(gen_dtml)
 
   def writedtml (self,pathname):
-    file=open(pathname,"wb")
-    file.write("<DTML>\n")
+    file=codecs.open(pathname,'wb','utf-8')
+    file.write(u"<DTML>\n")
     for subobj in self.root.subobjs:
       subobj.writedtml(file,2)
-    file.write("</DTML>")
+    file.write(u"</DTML>")
     file.close()
 
 
@@ -186,11 +180,11 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     self.dirrelnamestack=[]
     self.subobjstack=[]
 
-    file=open(pathname,"rb")
+    file=codecs.open(pathname,'rb','utf-8')
     data=file.read()
     file.close()
 
-    self.dirrelnamestack.append(".")
+    self.dirrelnamestack.append(u".")
     self.subobjstack.append([])
 
     self.feed(data)
@@ -203,7 +197,7 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     subobjs=self.subobjstack.pop()
     subobjs.sort()
     self.root=Directory(None,subobjs)
-    self.root.relname=DirectoryTree.relname_get(".")
+    self.root.relname=DirectoryTree.relname_get(u".")
 
   def report_unbalanced (self,tag):
     sys.exit("Error in DirectoryTree: while parsing a DTML file, found an end '"+tag+"' tag without a start tag")
@@ -211,7 +205,8 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
   def start_dir (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
-      sys.exit("Error in DirectoryTree: DIR without name (attributes are "+str(attrs)+")")
+      sys.exit("Error in DirectoryTree: DIR without name (attributes are "+unicode(attrs)+")")
+    assert isinstance(attrs["name"],unicode)
     self.dirleafnamestack.append(attrs["name"])
     self.dirrelnamestack.append(DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"])))
     self.subobjstack.append([])
@@ -226,17 +221,22 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
   def do_file (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
-      sys.exit("Error in DirectoryTree: FILE without name (attributes are "+str(attrs)+")")
+      sys.exit("Error in DirectoryTree: FILE without name (attributes are "+unicode(attrs)+")")
+    assert isinstance(attrs["name"],unicode)
     file=File(attrs["name"],WeakSignature.gen_dtml(attrs),StrongSignature.gen_dtml(attrs))
     file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
     self.subobjstack[-1].append(file)
 
 
 
+NONCHAR=unichr(0xFFFF)
+
+
+
 class Object(object):
   def __init__ (self,leafname):
-    if leafname==chr(255):
-      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with chr(255)")
+    if leafname==NONCHAR:
+      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with U+FFFF")
     elif leafname==TMPDIR:
       sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', because this clashes with the temporary directory name")
     self.leafname=leafname
@@ -253,7 +253,7 @@ class Object(object):
 
 class SentinelObject(object):
   def __init__ (self):
-    self.leafname=chr(255)
+    self.leafname=NONCHAR
 
 
 
@@ -264,42 +264,40 @@ sentinelobj=SentinelObject()
 class Directory(Object):
   def __init__ (self,leafname,subobjs):
     Object.__init__(self,leafname)
-    #print "Creating Directory '"+str(leafname)+"'"
+    #print "Creating Directory '"+unicode(leafname)+"'"
     self.subobjs=subobjs
 
   def writedtml (self,file,depth):
-    file.write(" "*depth)
-    file.write("<DIR name=\"")
+    file.write(u" "*depth)
+    file.write(u"<DIR name=\"")
     file.write(cgi.escape(self.leafname,True))
-    file.write("\">\n")
+    file.write(u"\">\n")
     for subobj in self.subobjs:
       subobj.writedtml(file,depth+2)
-    file.write(" "*depth)
-    file.write("</DIR>\n")
+    file.write(u" "*depth)
+    file.write(u"</DIR>\n")
 
 
 
 class File(Object):
   def __init__ (self,leafname,weakSignature,strongSignature):
     Object.__init__(self,leafname)
-    #print "Creating File '"+str(leafname)+"'"
+    #print "Creating File '"+unicode(leafname)+"'"
     self.weakSignature=weakSignature
     self.strongSignature=strongSignature
 
   def writedtml (self,file,depth):
-    file.write(" "*depth)
-#   file.write("<FILE name=")
-#   file.write(xml.sax.saxutils.quoteattr(self.leafname))
-    file.write("<FILE name=\"")
+    file.write(u" "*depth)
+    file.write(u"<FILE name=\"")
     file.write(cgi.escape(self.leafname,True))
-    file.write("\"")
+    file.write(u"\"")
     attrs={}
     self.weakSignature.getdtml(attrs)
     self.strongSignature.getdtml(attrs)
     for name in ["size", "md5sum", "time"]:
-      file.write(" "+name+"=")
+      file.write(u" "+name+"=")
       file.write(attrs[name])
-    file.write(">\n")
+    file.write(u">\n")
 
 
 
@@ -307,16 +305,16 @@ class WeakSignature(object):
   def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in WeakSignature: initialised with size '"+str(size)+"', which is invalid")
+      sys.exit("Error in WeakSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.lastModifiedTime=int(lastModifiedTime)
 
   def gen_fs (pathname):
-    #print "Creating WeakSignature for '"+str(pathname)+"'"
+    #print "Creating WeakSignature for '"+unicode(pathname)+"'"
     fileInfo=os.stat(pathname)
     size=fileInfo.st_size
-    #print "  size is "+str(size)
+    #print "  size is "+unicode(size)
     lastModifiedTime=int(fileInfo.st_mtime*1000)
-    #print "  lastModifiedTime is "+str(lastModifiedTime)
+    #print "  lastModifiedTime is "+unicode(lastModifiedTime)
     return WeakSignature(size,lastModifiedTime)
   gen_fs=staticmethod(gen_fs)
 
@@ -343,22 +341,26 @@ class WeakSignature(object):
     return (self.size^self.lastModifiedTime)
 
   def getdtml (self,attrs):
-    attrs["size"]=str(self.size)
-    attrs["time"]=str(self.lastModifiedTime)
+    attrs["size"]=unicode(self.size)
+    attrs["time"]=unicode(self.lastModifiedTime)
 
 
 
 def renderMd5sum(val):
   assert isinstance(val,str)
   assert len(val)==16
-  return "".join([hex(ord(c))[2:].upper().zfill(2) for c in val])
+  return u"".join([hex(ord(c))[2:].upper().zfill(2) for c in val])
 
 
 
 def parseMd5sum(val):
-  val=str(val)
-  assert len(val)==32
-  return "".join([chr(int(val[i:i+2],16)) for i in xrange(0,32,2)])
+  isinstance(val,basestring)
+  if len(val)!=32:
+    sys.exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
+  try:
+    return "".join([chr(int(val[i:i+2],16)) for i in xrange(0,32,2)])
+  except ValueError:
+    sys.exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
 
 
 
@@ -366,15 +368,15 @@ class StrongSignature(object):
   def __init__ (self,size,md5sum):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in StrongSignature: initialised with size '"+str(size)+"', which is invalid")
+      sys.exit("Error in StrongSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.md5sum=md5sum
 
   def gen_fs (pathname):
-    #print "Creating StrongSignature for '"+str(pathname)+"'"
+    #print "Creating StrongSignature for '"+unicode(pathname)+"'"
     size=os.stat(pathname).st_size
-    #print "  size is "+str(size)
+    #print "  size is "+unicode(size)
     md5sum=md5.new()
-    file=open(pathname,"rb")
+    file=open(pathname,'rb')
     consumed=0
     while True:
       block=file.read(256*1024)
@@ -412,7 +414,7 @@ class StrongSignature(object):
     return (self.size^self.md5sum.__hash__())
 
   def getdtml (self,attrs):
-    attrs["size"]=str(self.size)
+    attrs["size"]=unicode(self.size)
     attrs["md5sum"]=renderMd5sum(self.md5sum)
 
 
@@ -561,8 +563,16 @@ class ScriptFile(object):
 
 
 class BatchFile(ScriptFile):
+  def esc (s):
+    try:
+      s = s.encode('cp1252')
+    except UnicodeError:
+      sys.exit("Error in BatchFile: path '"+s+"' cannot be represented in Windows-1252")
+    return s.replace("%","%%")
+  esc=staticmethod(esc)
+
   def __init__ (self,filename,forNow):
-    self.file=open(filename+".bat","wb")
+    self.file=open(filename+u".bat",'wb')
     self.file.write("chcp 1252\n")
 
   def comment (self,body):
@@ -572,31 +582,31 @@ class BatchFile(ScriptFile):
 
   def mkdir (self,name):
     self.file.write("MKDIR \"")
-    self.file.write(name.replace("%","%%"))
+    self.file.write(BatchFile.esc(name))
     self.file.write("\"\n")
 
   def rmdir (self,name):
     self.file.write("RMDIR \"")
-    self.file.write(name.replace("%","%%"))
+    self.file.write(BatchFile.esc(name))
     self.file.write("\"\n")
 
   def cp (self,src,dst):
     self.file.write("COPY \"")
-    self.file.write(src.replace("%","%%"))
+    self.file.write(BatchFile.esc(src))
     self.file.write("\" \"")
-    self.file.write(dst.replace("%","%%"))
+    self.file.write(BatchFile.esc(dst))
     self.file.write("\"\n")
 
   def mv (self,src,dst):
     self.file.write("MOVE \"")
-    self.file.write(src.replace("%","%%"))
+    self.file.write(BatchFile.esc(src))
     self.file.write("\" \"")
-    self.file.write(dst.replace("%","%%"))
+    self.file.write(BatchFile.esc(dst))
     self.file.write("\"\n")
 
   def rm (self,name):
     self.file.write("DEL /F \"")
-    self.file.write(name.replace("%","%%"))
+    self.file.write(BatchFile.esc(name))
     self.file.write("\"\n")
 
   def close (self):
@@ -616,7 +626,7 @@ class BashScript(ScriptFile):
   winpathmap=staticmethod(winpathmap)
 
   def __init__ (self,filename,forNow):
-    self.file=open(filename+".sh","wb")
+    self.file=codecs.open(filename+u".sh",'wb','utf-8')
 
   def comment (self,body):
     self.file.write("# ")
@@ -675,7 +685,7 @@ def pathSplitImpl (out,path):
 class PythonScript(ScriptFile):
   def __init__ (self,filename,forNow):
     self.forNow=forNow
-    self.file=open(filename+".py","wb")
+    self.file=open(filename+u".py",'wb')
     if forNow:
       head="""
 
@@ -690,7 +700,7 @@ z = None
 
 def startZip(p):
   global z
-  z = zipfile.ZipFile(p, "w", zipfile.ZIP_DEFLATED, True)
+  z = zipfile.ZipFile(p, 'w', zipfile.ZIP_DEFLATED, True)
 
 def endZip():
   z.close()
@@ -785,13 +795,13 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
   def diff (self,oldtree,newtree,new_pathname,output_pathname,scripttypeCls):
     self.new_pathname=new_pathname
 
-    name=os.path.join(output_pathname,"!builddiffs")
+    name=os.path.join(output_pathname,u"!builddiffs")
     self.builddiffs_file=scripttypeCls(name,True)
     self.builddiffs_file.comment("Copies files to be backed up to the current directory")
-    name=os.path.join(output_pathname,"!pre_applydiffs")
+    name=os.path.join(output_pathname,u"!pre_applydiffs")
     self.preapplydiffs_file=scripttypeCls(name,False)
     self.preapplydiffs_file.comment("Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it")
-    name=os.path.join(output_pathname,"!post_applydiffs")
+    name=os.path.join(output_pathname,u"!post_applydiffs")
     self.postapplydiffs_file=scripttypeCls(name,False)
     self.postapplydiffs_file.comment("Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state")
 
@@ -809,8 +819,8 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
     self.diff_post_clear(oldtree.root)
     self.postapplydiffs_file.comment("Copies duplicated updated files to all destinations")
     self.diff_post_copynew(newtree.root)
-    self.builddiffs_file.comment("Diff set file count: "+str(self.builddiffs_files_count))
-    self.builddiffs_file.comment("Diff set total bytes: "+str(self.builddiffs_files_size))
+    self.builddiffs_file.comment("Diff set file count: "+unicode(self.builddiffs_files_count))
+    self.builddiffs_file.comment("Diff set total bytes: "+unicode(self.builddiffs_files_size))
 
     self.builddiffs_file.close()
     self.preapplydiffs_file.close()
@@ -917,7 +927,7 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
       obj.copies.append(newobj)
     else:
       # The new file is neither a direct copy of an old one nor of a new one
-      if not newdir.__dict__.has_key("inbuilddiffs"):
+      if not newdir.__dict__.has_key('inbuilddiffs'):
         self.builddiffs_file.mkdir(os.path.dirname(newobj.relname))
         newdir.inbuilddiffs=True
       self.builddiffs_file.cp(os.path.join(self.new_pathname,newobj.relname),newobj.relname)
@@ -939,6 +949,6 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
 
 if __name__=="__main__":
   start=time.time()
-  main(sys.argv[1:])
-  print "Took "+str(time.time()-start)+" secs"
-  print "Of "+str(quick+slow)+" files, "+str((quick*100)/(quick+slow))+"% didn't need to be re-hashed"
+  main([arg.decode(sys.stdin.encoding) for arg in sys.argv[1:]])
+  print "Took "+unicode(time.time()-start)+" secs"
+  print "Of "+unicode(quick+slow)+" files, "+unicode((quick*100)/(quick+slow))+"% didn't need to be re-hashed"
