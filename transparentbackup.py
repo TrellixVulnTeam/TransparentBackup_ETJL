@@ -62,6 +62,8 @@ def main (args):
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
+  os.stat_float_times(True)
+
   transparentbackup(opt_backup_source,opt_diff_dtml,opt_output,opt_scripttype)
 
 
@@ -71,7 +73,7 @@ def transparentbackup (new_pathname,old_dtml,output_pathname,scripttype):
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
-  newtree=DirectoryTree.gen_fs(new_pathname)
+  newtree=DirectoryTree.gen_fs(new_pathname,oldtree)
   DirectoryTree.relname_cache=None
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttype)
   newtree.writedtml(os.path.join(output_pathname,"!fullstate.dtml"))
@@ -100,17 +102,21 @@ class DirectoryTree:
     return DirectoryTree(root)
   gen_empty=staticmethod(gen_empty)
 
-  def gen_fs (source_pathname):
+  def gen_fs (source_pathname,oldtree):
     (t,source_leafname)=os.path.split(source_pathname)
     if len(source_leafname)==0:
       sys.exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if refering to a directory, omit this)")
-    root=DirectoryTree.gen_fs_dir(None,source_pathname,".")
+    root=DirectoryTree.gen_fs_dir(None,source_pathname,".",oldtree.root)
     root.relname=DirectoryTree.relname_get(".")
     return DirectoryTree(root)
   gen_fs=staticmethod(gen_fs)
 
-  def gen_fs_dir (source_leafname,source_pathname,source_relname):
-    subobjs=[]
+  def gen_fs_dir (source_leafname,source_pathname,source_relname,oldtree):
+    oldtreeSubobjs={}
+    if oldtree:
+      assert isinstance(oldtree,Directory)
+      for subobj in oldtree.subobjs:
+        oldtreeSubobjs[subobj.leafname]=subobj
     subobjs=os.listdir(source_pathname)
     subobjs.sort()
     i=0
@@ -121,10 +127,22 @@ class DirectoryTree:
           sys.exit("Error in DirectoryTree: unable to support file or directory with name '"+leafname+"', which contains a control character (might be a Unicode name which happens to be valid Windows-1252 but not valid Latin-1)")
       pathname=os.path.join(source_pathname,leafname)
       relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
+      oldtreeSubobj=oldtreeSubobjs.get(leafname,None)
       if os.path.isdir(pathname):
-        subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname)
+        if not isinstance(oldtreeSubobj,Directory):
+          oldtreeSubobj=None
+        subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname,oldtreeSubobj)
       else:
-        subobj=File(leafname,Signature.gen_fs(pathname))
+        if not isinstance(oldtreeSubobj,File):
+          oldtreeSubobj=None
+        weakSignature=WeakSignature.gen_fs(pathname)
+        if oldtreeSubobj and oldtreeSubobj.weakSignature==weakSignature:
+          #print "assuming that "+relname+" is unchanged"
+          strongSignature=oldtreeSubobj.strongSignature
+        else:
+          #print "recalculating strong sig for "+relname
+          strongSignature=StrongSignature.gen_fs(pathname)
+        subobj=File(leafname,weakSignature,strongSignature)
       subobj.relname=relname
       subobjs[i]=subobj
       i=i+1
@@ -200,7 +218,7 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
       sys.exit("Error in DirectoryTree: FILE without name (attributes are "+str(attrs)+")")
-    file=File(attrs["name"],Signature.gen_dtml(attrs))
+    file=File(attrs["name"],WeakSignature.gen_dtml(attrs),StrongSignature.gen_dtml(attrs))
     file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
     self.subobjstack[-1].append(file)
 
@@ -253,10 +271,11 @@ class Directory(Object):
 
 
 class File(Object):
-  def __init__ (self,leafname,signature):
+  def __init__ (self,leafname,weakSignature,strongSignature):
     Object.__init__(self,leafname)
     #print "Creating File '"+str(leafname)+"'"
-    self.signature=signature
+    self.weakSignature=weakSignature
+    self.strongSignature=strongSignature
 
   def writedtml (self,file,depth):
     file.write(" "*depth)
@@ -264,21 +283,87 @@ class File(Object):
 #   file.write(xml.sax.saxutils.quoteattr(self.leafname))
     file.write("<FILE name=\"")
     file.write(cgi.escape(self.leafname,True))
-    file.write("\" ")
-    self.signature.writedtml(file)
+    file.write("\"")
+    attrs={}
+    self.weakSignature.getdtml(attrs)
+    self.strongSignature.getdtml(attrs)
+    for name in ["size", "md5sum", "time"]:
+      file.write(" "+name+"=")
+      file.write(attrs[name])
     file.write(">\n")
 
 
 
-class Signature:
-  def __init__ (self,size,md5sum_hexstring):
-    if len(md5sum_hexstring)!=32:
-      sys.exit("Error in Signature: initialised with MD5 sum '"+md5sum_hexstring+"', which is invalid")
+class WeakSignature:
+  def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
-    self.md5sum=md5sum_hexstring.upper()
+    if self.size<0:
+      sys.exit("Error in WeakSignature: initialised with size '"+size+"', which is invalid")
+    self.lastModifiedTime=int(lastModifiedTime)
+    if self.lastModifiedTime<0:
+      sys.exit("Error in WeakSignature: initialised with lastModifiedTime '"+lastModifiedTime+"', which is invalid")
 
   def gen_fs (pathname):
-    #print "Creating Signature for '"+str(pathname)+"'"
+    #print "Creating WeakSignature for '"+str(pathname)+"'"
+    fileInfo=os.stat(pathname)
+    size=fileInfo.st_size
+    #print "  size is "+str(size)
+    lastModifiedTime=int(fileInfo.st_mtime*1000)
+    #print "  lastModifiedTime is "+str(lastModifiedTime)
+    return WeakSignature(size,lastModifiedTime)
+  gen_fs=staticmethod(gen_fs)
+
+  def gen_dtml (attrs):
+    if not attrs.has_key("size") or not attrs.has_key("time"):
+      sys.exit("Error in WeakSignature.gen_dtml: size and time attributes both required")
+    return WeakSignature(attrs["size"],attrs["time"])
+  gen_dtml=staticmethod(gen_dtml)
+
+  def __cmp__ (self,other):
+    if other==None:
+      return 1
+    if self.size<other.size:
+      return -1
+    if self.size>other.size:
+      return 1
+    if self.lastModifiedTime<other.lastModifiedTime:
+      return -1
+    if self.lastModifiedTime>other.lastModifiedTime:
+      return 1
+    return 0
+
+  def __hash__ (self):
+    return (self.size^self.lastModifiedTime)
+
+  def getdtml (self,attrs):
+    attrs["size"]=str(self.size)
+    attrs["time"]=str(self.lastModifiedTime)
+
+
+
+def renderMd5sum(val):
+  assert isinstance(val,str)
+  assert len(val)==16
+  return "".join([hex(ord(c))[2:].upper().zfill(2) for c in val])
+
+
+
+def parseMd5sum(val):
+  val=str(val)
+  assert len(val)==32
+  return "".join([chr(int(val[i:i+2],16)) for i in xrange(0,32,2)])
+
+
+
+class StrongSignature:
+  def __init__ (self,size,md5sum):
+    self.size=int(size)
+    if self.size<0:
+      sys.exit("Error in StrongSignature: initialised with size '"+size+"', which is invalid")
+    self.md5sum=md5sum
+
+  def gen_fs (pathname):
+    #print "Creating StrongSignature for '"+str(pathname)+"'"
     size=os.stat(pathname).st_size
     #print "  size is "+str(size)
     md5sum=md5.new()
@@ -293,14 +378,14 @@ class Signature:
     file.close()
     if consumed!=size:
       sys.exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
-    #print "  md5sum is "+md5sum.hexdigest()
-    return Signature(size,md5sum.hexdigest())
+    #print "  md5sum is "+renderMd5sum(md5sum.digest())
+    return StrongSignature(size,md5sum.digest())
   gen_fs=staticmethod(gen_fs)
 
   def gen_dtml (attrs):
     if not attrs.has_key("size") or not attrs.has_key("md5sum"):
-      sys.exit("Error in Signature.gen_dtml: size and md5sum attributes both required")
-    return Signature(attrs["size"],attrs["md5sum"])
+      sys.exit("Error in StrongSignature.gen_dtml: size and md5sum attributes both required")
+    return StrongSignature(attrs["size"],parseMd5sum(attrs["md5sum"]))
   gen_dtml=staticmethod(gen_dtml)
 
   def __cmp__ (self,other):
@@ -319,11 +404,9 @@ class Signature:
   def __hash__ (self):
     return (self.size^self.md5sum.__hash__())
 
-  def writedtml (self,file):
-    file.write("size=")
-    file.write(str(self.size))
-    file.write(" md5sum=")
-    file.write(str(self.md5sum))
+  def getdtml (self,attrs):
+    attrs["size"]=str(self.size)
+    attrs["md5sum"]=renderMd5sum(self.md5sum)
 
 
 
@@ -347,7 +430,7 @@ class DirectoryTreeDiffer:
     while old!=sentinelobj or new!=sentinelobj:
       if old.leafname==new.leafname:
         # An old file still exists
-        if old.signature!=new.signature:
+        if old.strongSignature!=new.strongSignature:
           self.file_modified(old,new,files)
         else:
           self.file_unmodified(old,new,files)
@@ -615,7 +698,7 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
 
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,File):
-        files[oldsubobj.signature]=oldsubobj
+        files[oldsubobj.strongSignature]=oldsubobj
         oldsubobj.copies=[]
       elif isinstance(oldsubobj,Directory):
         self.diff_pre_old(oldsubobj,files)
@@ -704,10 +787,10 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
     self.builddiffs_file.mkdir(newobj.relname)
 
   def file_gen (self,newobj,files):
-    obj=files.oldfiles.get(newobj.signature,None)
+    obj=files.oldfiles.get(newobj.strongSignature,None)
     if obj==None:
       # The new file is not a direct copy of an old one
-      obj=files.newfiles.get(newobj.signature,None)
+      obj=files.newfiles.get(newobj.strongSignature,None)
     if obj!=None:
       # The new file is a copy of an old one or another new one
       obj.copies.append(newobj)
@@ -715,8 +798,8 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
       # The new file is neither a direct copy of an old one nor of a new one
       self.builddiffs_file.cp(os.path.join(self.new_pathname,newobj.relname),newobj.relname)
       self.builddiffs_files_count=self.builddiffs_files_count+1
-      self.builddiffs_files_size=self.builddiffs_files_size+newobj.signature.size
-      files.newfiles[newobj.signature]=newobj
+      self.builddiffs_files_size=self.builddiffs_files_size+newobj.strongSignature.size
+      files.newfiles[newobj.strongSignature]=newobj
 
   def file_del (self,oldobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_DELETED

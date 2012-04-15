@@ -1,35 +1,35 @@
 <DTML>
   <DIR name="A Subdirectory">
-    <FILE name="Copied Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
-    <FILE name="Created File.txt" size=25 md5sum=5C68044613311537CC2A69DBA70264FD>
-    <FILE name="New Moved and Edited File.txt" size=132 md5sum=B45D7B7DE23447352B6F5B3EB7BC63D1>
-    <FILE name="New Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
-    <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4>
-    <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
-    <FILE name="Unmoved and Edited File.txt" size=55 md5sum=DB19E7E7E42D9668759F0311587A7E5A>
+    <FILE name="Copied Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
+    <FILE name="Created File.txt" size=25 md5sum=5C68044613311537CC2A69DBA70264FD time=1258075333000>
+    <FILE name="New Moved and Edited File.txt" size=132 md5sum=B45D7B7DE23447352B6F5B3EB7BC63D1 time=1258075333000>
+    <FILE name="New Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE time=1270424345000>
+    <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4 time=1270424538000>
+    <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424569000>
+    <FILE name="Unmoved and Edited File.txt" size=55 md5sum=DB19E7E7E42D9668759F0311587A7E5A time=1258075333000>
   </DIR>
-  <FILE name="Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7>
-  <FILE name="Copied Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7>
-  <FILE name="Copied Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
-  <FILE name="Created File.txt" size=29 md5sum=6768AEE035748A86476A0EAF02DE2DA8>
+  <FILE name="Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7 time=1270424764000>
+  <FILE name="Copied Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7 time=1270424764000>
+  <FILE name="Copied Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
+  <FILE name="Created File.txt" size=29 md5sum=6768AEE035748A86476A0EAF02DE2DA8 time=1258075332000>
   <DIR name="Created Subdirectory">
-    <FILE name="Created File.txt" size=62 md5sum=DEE69199C5DFD1C50F09C3F55A855F2C>
-    <FILE name="New Moved Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
+    <FILE name="Created File.txt" size=62 md5sum=DEE69199C5DFD1C50F09C3F55A855F2C time=1258075333000>
+    <FILE name="New Moved Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424549000>
   </DIR>
-  <FILE name="Cross-Moved and Edited File.txt" size=140 md5sum=39544F2C25AB87DCFEEF4AD7DC1F2A74>
-  <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3>
-  <FILE name="Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
+  <FILE name="Cross-Moved and Edited File.txt" size=140 md5sum=39544F2C25AB87DCFEEF4AD7DC1F2A74 time=1258075332000>
+  <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3 time=1270424352000>
+  <FILE name="Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424549000>
   <DIR name="New Moved Subdirectory">
-    <FILE name="Created File.txt" size=29 md5sum=6768AEE035748A86476A0EAF02DE2DA8>
-    <FILE name="Cross-Copied Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
-    <FILE name="Double Cross-Moved and Edited File.txt" size=175 md5sum=CD094C005774063B2876B7C5C54C847D>
-    <FILE name="Double Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3>
-    <FILE name="Moved and Edited File.txt" size=171 md5sum=947F8DE6DC7CA2EFF793B52C63842FAC>
-    <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233>
+    <FILE name="Created File.txt" size=29 md5sum=6768AEE035748A86476A0EAF02DE2DA8 time=1258075332000>
+    <FILE name="Cross-Copied Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
+    <FILE name="Double Cross-Moved and Edited File.txt" size=175 md5sum=CD094C005774063B2876B7C5C54C847D time=1258075333000>
+    <FILE name="Double Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3 time=1270424352000>
+    <FILE name="Moved and Edited File.txt" size=171 md5sum=947F8DE6DC7CA2EFF793B52C63842FAC time=1258075333000>
+    <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233 time=1270424807000>
   </DIR>
-  <FILE name="New Moved and Edited File.txt" size=139 md5sum=FD944939F2734896B09A5202BA1476CF>
-  <FILE name="New Moved and Unedited File.txt" size=81 md5sum=6AD9EB911726C92C35CB2B86782F4F1C>
-  <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19>
-  <FILE name="Unmoved and Edited File.txt" size=53 md5sum=DE76CB919BC4285BB6892FB0BDCD5E50>
-  <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
+  <FILE name="New Moved and Edited File.txt" size=139 md5sum=FD944939F2734896B09A5202BA1476CF time=1258075332000>
+  <FILE name="New Moved and Unedited File.txt" size=81 md5sum=6AD9EB911726C92C35CB2B86782F4F1C time=1270424784000>
+  <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19 time=1270424339000>
+  <FILE name="Unmoved and Edited File.txt" size=53 md5sum=DE76CB919BC4285BB6892FB0BDCD5E50 time=1258075332000>
+  <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
 </DTML>

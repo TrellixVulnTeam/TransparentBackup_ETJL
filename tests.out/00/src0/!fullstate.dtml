@@ -1,29 +1,29 @@
 <DTML>
   <DIR name="A Subdirectory">
-    <FILE name="Cross-Moved and Edited File.txt" size=121 md5sum=9D4ED49EDA77A0BA71E816D15254AABA>
-    <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3>
-    <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
-    <FILE name="Moved Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
-    <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D>
-    <FILE name="Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE>
-    <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19>
-    <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
-    <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC>
+    <FILE name="Cross-Moved and Edited File.txt" size=121 md5sum=9D4ED49EDA77A0BA71E816D15254AABA time=1270424572000>
+    <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3 time=1270424352000>
+    <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424349000>
+    <FILE name="Moved Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424600000>
+    <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D time=1270424530000>
+    <FILE name="Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE time=1270424345000>
+    <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19 time=1270424339000>
+    <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424569000>
+    <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC time=1270424337000>
   </DIR>
-  <FILE name="Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7>
-  <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
+  <FILE name="Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7 time=1270424764000>
+  <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424546000>
   <DIR name="Deleted Subdirectory">
-    <FILE name="Deleted File.txt" size=62 md5sum=D52EEB1BB67A6CA5FC4F5849BAD28E5A>
+    <FILE name="Deleted File.txt" size=62 md5sum=D52EEB1BB67A6CA5FC4F5849BAD28E5A time=1270424791000>
   </DIR>
-  <FILE name="Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275>
+  <FILE name="Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424549000>
   <DIR name="Moved Subdirectory">
-    <FILE name="Deleted File.txt" size=55 md5sum=8D9D78645C780E9D6A9682FA717966A3>
-    <FILE name="Moved and Edited File.txt" size=153 md5sum=486373BA113AD073A2F1C5B96FD5B665>
-    <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233>
+    <FILE name="Deleted File.txt" size=55 md5sum=8D9D78645C780E9D6A9682FA717966A3 time=1270424814000>
+    <FILE name="Moved and Edited File.txt" size=153 md5sum=486373BA113AD073A2F1C5B96FD5B665 time=1270424855000>
+    <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233 time=1270424807000>
   </DIR>
-  <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D>
-  <FILE name="Moved and Unedited File.txt" size=81 md5sum=6AD9EB911726C92C35CB2B86782F4F1C>
-  <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4>
-  <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC>
-  <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105>
+  <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D time=1270424602000>
+  <FILE name="Moved and Unedited File.txt" size=81 md5sum=6AD9EB911726C92C35CB2B86782F4F1C time=1270424784000>
+  <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4 time=1270424538000>
+  <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC time=1270424537000>
+  <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
 </DTML>
