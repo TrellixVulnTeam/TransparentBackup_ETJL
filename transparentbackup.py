@@ -26,11 +26,21 @@ TMPDIR=u".tmp"
 
 
 
+def exit (msg):
+  isinstance(msg,basestring)
+  try:
+    m=str(msg)
+  except:
+    m=repr(msg)[2:-1]
+  sys.exit(m)
+
+
+
 def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>]"
   (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype="])
   if len(leftargs)>0:
-    sys.exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
+    exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
   opt_output=None
@@ -48,18 +58,18 @@ def main (args):
     if option in ("-s","--scripttype"):
       opt_scripttype=value
   if opt_backup_source==None:
-    sys.exit("No backup source path (-b) supplied\n"+syntax)
+    exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
-    sys.exit("Backup source path (-b) is not a directory\n"+syntax)
+    exit("Backup source path (-b) is not a directory\n"+syntax)
   if opt_output==None:
-    sys.exit("No output path (-o) supplied\n"+syntax)
+    exit("No output path (-o) supplied\n"+syntax)
   if not os.path.isdir(opt_output):
-    sys.exit("Output path (-o) is not a directory\n"+syntax)
+    exit("Output path (-o) is not a directory\n"+syntax)
   if opt_scripttype==None:
-    sys.exit("No script type (-s) supplied\n"+syntax)
+    exit("No script type (-s) supplied\n"+syntax)
   scripttypeCls=sys.modules[__name__].__dict__.get(opt_scripttype)
   if not isinstance(scripttypeCls,type) or ScriptFile not in scripttypeCls.__mro__:
-    sys.exit("Script type (-s) is not valid\n"+syntax)
+    exit("Script type (-s) is not valid\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
   if opt_diff_dtml!=None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
@@ -108,7 +118,7 @@ class DirectoryTree(object):
   def gen_fs (source_pathname,oldtree):
     (t,source_leafname)=os.path.split(source_pathname)
     if len(source_leafname)==0:
-      sys.exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if referring to a directory, omit this)")
+      exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if referring to a directory, omit this)")
     root=DirectoryTree.gen_fs_dir(None,source_pathname,u".",oldtree.root)
     root.relname=DirectoryTree.relname_get(u".")
     return DirectoryTree(root)
@@ -192,7 +202,7 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
 
     assert len(self.subobjstack)==len(self.dirrelnamestack)
     if len(self.subobjstack)!=1:
-      sys.exit("Error in DirectoryTree: while parsing a DTML file, found that DIR tags had not been closed")
+      exit("Error in DirectoryTree: while parsing a DTML file, found that DIR tags had not been closed")
     assert len(self.dirleafnamestack)==0
     subobjs=self.subobjstack.pop()
     subobjs.sort()
@@ -200,12 +210,12 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     self.root.relname=DirectoryTree.relname_get(u".")
 
   def report_unbalanced (self,tag):
-    sys.exit("Error in DirectoryTree: while parsing a DTML file, found an end '"+tag+"' tag without a start tag")
+    exit("Error in DirectoryTree: while parsing a DTML file, found an end '"+tag+"' tag without a start tag")
 
   def start_dir (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
-      sys.exit("Error in DirectoryTree: DIR without name (attributes are "+unicode(attrs)+")")
+      exit("Error in DirectoryTree: DIR without name (attributes are "+unicode(attrs)+")")
     assert isinstance(attrs["name"],unicode)
     self.dirleafnamestack.append(attrs["name"])
     self.dirrelnamestack.append(DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"])))
@@ -221,7 +231,7 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
   def do_file (self,attrs):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
-      sys.exit("Error in DirectoryTree: FILE without name (attributes are "+unicode(attrs)+")")
+      exit("Error in DirectoryTree: FILE without name (attributes are "+unicode(attrs)+")")
     assert isinstance(attrs["name"],unicode)
     file=File(attrs["name"],WeakSignature.gen_dtml(attrs),StrongSignature.gen_dtml(attrs))
     file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
@@ -236,9 +246,9 @@ NONCHAR=unichr(0xFFFF)
 class Object(object):
   def __init__ (self,leafname):
     if leafname==NONCHAR:
-      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with U+FFFF")
+      exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with U+FFFF")
     elif leafname==TMPDIR:
-      sys.exit("Error in Object: unable to support file or directory with name '"+leafname+"', because this clashes with the temporary directory name")
+      exit("Error in Object: unable to support file or directory with name '"+leafname+"', because this clashes with the temporary directory name")
     self.leafname=leafname
 
   def __cmp__ (self,other):
@@ -305,7 +315,7 @@ class WeakSignature(object):
   def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in WeakSignature: initialised with size '"+unicode(size)+"', which is invalid")
+      exit("Error in WeakSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.lastModifiedTime=int(lastModifiedTime)
 
   def gen_fs (pathname):
@@ -320,7 +330,7 @@ class WeakSignature(object):
 
   def gen_dtml (attrs):
     if not attrs.has_key("size") or not attrs.has_key("time"):
-      sys.exit("Error in WeakSignature.gen_dtml: size and time attributes both required")
+      exit("Error in WeakSignature.gen_dtml: size and time attributes both required")
     return WeakSignature(attrs["size"],attrs["time"])
   gen_dtml=staticmethod(gen_dtml)
 
@@ -356,11 +366,11 @@ def renderMd5sum(val):
 def parseMd5sum(val):
   isinstance(val,basestring)
   if len(val)!=32:
-    sys.exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
+    exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
   try:
     return "".join([chr(int(val[i:i+2],16)) for i in xrange(0,32,2)])
   except ValueError:
-    sys.exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
+    exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
 
 
 
@@ -368,7 +378,7 @@ class StrongSignature(object):
   def __init__ (self,size,md5sum):
     self.size=int(size)
     if self.size<0:
-      sys.exit("Error in StrongSignature: initialised with size '"+unicode(size)+"', which is invalid")
+      exit("Error in StrongSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.md5sum=md5sum
 
   def gen_fs (pathname):
@@ -386,14 +396,14 @@ class StrongSignature(object):
       md5sum.update(block)
     file.close()
     if consumed!=size:
-      sys.exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
+      exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
     #print "  md5sum is "+renderMd5sum(md5sum.digest())
     return StrongSignature(size,md5sum.digest())
   gen_fs=staticmethod(gen_fs)
 
   def gen_dtml (attrs):
     if not attrs.has_key("size") or not attrs.has_key("md5sum"):
-      sys.exit("Error in StrongSignature.gen_dtml: size and md5sum attributes both required")
+      exit("Error in StrongSignature.gen_dtml: size and md5sum attributes both required")
     return StrongSignature(attrs["size"],parseMd5sum(attrs["md5sum"]))
   gen_dtml=staticmethod(gen_dtml)
 
@@ -567,7 +577,7 @@ class BatchFile(ScriptFile):
     try:
       s = s.encode('cp1252')
     except UnicodeError:
-      sys.exit("Error in BatchFile: path '"+s+"' cannot be represented in Windows-1252")
+      exit("Error in BatchFile: path '"+s+"' cannot be represented in Windows-1252")
     return s.replace("%","%%")
   esc=staticmethod(esc)
 
