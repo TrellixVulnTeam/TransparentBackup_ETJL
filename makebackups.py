@@ -10,7 +10,22 @@ import shutil
 
 
 
-def getBackupSetName(pathName):
+BUILDER_LEAF_NAME = u"!builddiffs.py"
+STATE_LEAF_NAME = u"!fullstate.dtml"
+
+
+
+def exit (msg):
+  isinstance(msg,basestring)
+  try:
+    m=str(msg)
+  except:
+    m=repr(msg)[2:-1]
+  sys.exit(m)
+
+
+
+def getBackupSetName (pathName):
   return urllib.quote(os.path.basename(pathName), safe = "")
 
 
@@ -18,7 +33,7 @@ def getBackupSetName(pathName):
 def main (args):
   syntax = "Syntax: makebackups [path]..."
   if len(args) == 0:
-    sys.exit(syntax)
+    exit(syntax)
 
   date = datetime.date.today()
   dateStr = str(date.year % 100).zfill(2) + str(date.month).zfill(2) + str(date.day).zfill(2)
@@ -27,7 +42,7 @@ def main (args):
     backupSetName = getBackupSetName(backupSourcePathName)
     t = glob.glob(backupSetName + "[0-9][0-9][0-9][0-9][0-9][0-9].dtml")
     if len(t) > 1:
-      sys.exit("More than one DTML file found for " + backupSourcePathName + " (" + str(t) + ")")
+      exit("More than one DTML file found for " + backupSourcePathName + " (" + unicode(t) + ")")
     if len(t) == 0:
       dtmlFilePathName = None
       outputDirPathName = backupSetName + dateStr
@@ -42,19 +57,19 @@ def main (args):
     p = subprocess.Popen(tbArgs)
     rc = p.wait()
     if rc != 0:
-      sys.exit("Backup of " + backupSourcePathName + " failed")
+      exit("Backup of " + backupSourcePathName + " failed")
 
-    tbArgs = [sys.executable, "!builddiffs.py"]
+    tbArgs = [sys.executable, BUILDER_LEAF_NAME]
     p = subprocess.Popen(tbArgs, cwd = outputDirPathName)
     rc = p.wait()
     if rc != 0:
-      sys.exit("!builddiffs.py for " + backupSourcePathName + " failed")
+      exit(BUILDER_LEAF_NAME + " for " + backupSourcePathName + " failed")
 
-    shutil.copyfile(os.path.join(outputDirPathName, "!fullstate.dtml"), backupSetName + dateStr + ".dtml")
+    shutil.copyfile(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
     if dtmlFilePathName is not None:
       os.remove(dtmlFilePathName)
 
 
 
 if __name__ == "__main__":
-  main(sys.argv[1:])
+  main([arg.decode(sys.stdin.encoding) for arg in sys.argv[1:]])
