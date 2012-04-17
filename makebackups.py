@@ -64,10 +64,11 @@ def main (args):
     rc = p.wait()
     if rc != 0:
       exit(BUILDER_LEAF_NAME + " for " + backupSourcePathName + " failed")
+    os.remove(os.path.join(outputDirPathName, BUILDER_LEAF_NAME))
 
-    shutil.copyfile(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
+    shutil.move(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
     if dtmlFilePathName is not None:
-      os.remove(dtmlFilePathName)
+      shutil.move(dtmlFilePathName, dtmlFilePathName + ".old")
 
 
 
