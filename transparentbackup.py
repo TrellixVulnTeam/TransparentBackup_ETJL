@@ -706,6 +706,8 @@ import zipfile
 def mkdir(name):
   pass
 
+ALREADY_COMPRESSEDS = set(("zip", "tgz", "gz", "jpg", "png", "mp3", "flac", "oog", "avi", "mkv", "flv", "mov", "mp4", "m4a", "m4v"))
+
 z = None
 
 def startZip(p):
@@ -716,7 +718,10 @@ def endZip():
   z.close()
 
 def cp(src, dst):
-  z.write(os.path.join(*src), os.path.join(*dst))
+  mode = zipfile.ZIP_DEFLATED
+  if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
+    mode = zipfile.ZIP_STORED
+  z.write(os.path.join(*src), os.path.join(*dst), mode)
 
 startZip("diffs.zip")
 
