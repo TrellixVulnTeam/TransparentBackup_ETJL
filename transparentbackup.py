@@ -15,7 +15,7 @@ import string
 import getopt
 import os
 import codecs
-import md5
+import hashlib
 import cgi
 import sgmllib
 import xml.sax.saxutils
@@ -391,7 +391,7 @@ class StrongSignature(object):
     #print "Creating StrongSignature for '"+unicode(pathname)+"'"
     size=os.stat(pathname).st_size
     #print "  size is "+unicode(size)
-    md5sum=md5.new()
+    md5sum=hashlib.md5()
     file=open(pathname,'rb')
     consumed=0
     while True:
