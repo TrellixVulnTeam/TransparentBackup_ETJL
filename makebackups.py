@@ -68,9 +68,9 @@ def main (args):
       exit(BUILDER_LEAF_NAME + " for " + backupSourcePathName + " failed")
     os.remove(os.path.join(outputDirPathName, BUILDER_LEAF_NAME))
 
-    shutil.move(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
     if dtmlFilePathName is not None:
       shutil.move(dtmlFilePathName, dtmlFilePathName + ".old")
+    shutil.move(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
 
 
 
