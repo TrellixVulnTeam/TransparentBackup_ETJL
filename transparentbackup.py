@@ -37,14 +37,15 @@ def exit (msg):
 
 
 def main (args):
-  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>]"
-  (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype="])
+  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>]"
+  (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype=","skip-suffix="])
   if len(leftargs)>0:
     exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
   opt_output=None
   opt_scripttype=None
+  opt_skip_suffix=None
   for (option,value) in optlist:
     if option in ("-b","--backup-source"):
       opt_backup_source=value
@@ -57,6 +58,8 @@ def main (args):
       assert isinstance(opt_output,unicode)
     if option in ("-s","--scripttype"):
       opt_scripttype=value
+    if option=="--skip-suffix":
+      opt_skip_suffix=value
   if opt_backup_source==None:
     exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
@@ -81,16 +84,16 @@ def main (args):
 
   os.stat_float_times(True)
 
-  transparentbackup(opt_backup_source,opt_diff_dtml,opt_output,scripttypeCls)
+  transparentbackup(opt_backup_source,opt_diff_dtml,opt_skip_suffix,opt_output,scripttypeCls)
 
 
 
-def transparentbackup (new_pathname,old_dtml,output_pathname,scripttypeCls):
+def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scripttypeCls):
   if old_dtml==None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
-  newtree=DirectoryTree.gen_fs(new_pathname,oldtree)
+  newtree=DirectoryTree.gen_fs(new_pathname,oldtree,skip_suffix)
   DirectoryTree.relname_cache=None
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))
@@ -115,16 +118,16 @@ class DirectoryTree(object):
     return DirectoryTree(root)
   gen_empty=staticmethod(gen_empty)
 
-  def gen_fs (source_pathname,oldtree):
+  def gen_fs (source_pathname,oldtree,skip_suffix):
     (t,source_leafname)=os.path.split(source_pathname)
     if len(source_leafname)==0:
       exit("Error while reading backup source: the pathname appears to have a directory seperator on the end (if referring to a directory, omit this)")
-    root=DirectoryTree.gen_fs_dir(None,source_pathname,u".",oldtree.root)
+    root=DirectoryTree.gen_fs_dir(None,source_pathname,u".",oldtree.root,skip_suffix)
     root.relname=DirectoryTree.relname_get(u".")
     return DirectoryTree(root)
   gen_fs=staticmethod(gen_fs)
 
-  def gen_fs_dir (source_leafname,source_pathname,source_relname,oldtree):
+  def gen_fs_dir (source_leafname,source_pathname,source_relname,oldtree,skip_suffix):
     global quick,slow
     oldtreeSubobjs={}
     if oldtree:
@@ -136,29 +139,32 @@ class DirectoryTree(object):
     i=0
     while i<len(subobjs):
       leafname=subobjs[i]
-      pathname=os.path.join(source_pathname,leafname)
-      relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
-      oldtreeSubobj=oldtreeSubobjs.get(leafname,None)
-      if os.path.isdir(pathname):
-        if not isinstance(oldtreeSubobj,Directory):
-          oldtreeSubobj=None
-        subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname,oldtreeSubobj)
+      if skip_suffix and leafname.endswith(skip_suffix):
+        del subobjs[i]
       else:
-        if not isinstance(oldtreeSubobj,File):
-          oldtreeSubobj=None
-        weakSignature=WeakSignature.gen_fs(pathname)
-        if oldtreeSubobj and oldtreeSubobj.weakSignature==weakSignature:
-          #print "assuming that "+relname+" is unchanged"
-          strongSignature=oldtreeSubobj.strongSignature
-          quick+=1
+        pathname=os.path.join(source_pathname,leafname)
+        relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
+        oldtreeSubobj=oldtreeSubobjs.get(leafname,None)
+        if os.path.isdir(pathname):
+          if not isinstance(oldtreeSubobj,Directory):
+            oldtreeSubobj=None
+          subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname,oldtreeSubobj,skip_suffix)
         else:
-          #print "recalculating strong sig for "+relname
-          strongSignature=StrongSignature.gen_fs(pathname)
-          slow+=1
-        subobj=File(leafname,weakSignature,strongSignature)
-      subobj.relname=relname
-      subobjs[i]=subobj
-      i=i+1
+          if not isinstance(oldtreeSubobj,File):
+            oldtreeSubobj=None
+          weakSignature=WeakSignature.gen_fs(pathname)
+          if oldtreeSubobj and oldtreeSubobj.weakSignature==weakSignature:
+            #print "assuming that "+relname+" is unchanged"
+            strongSignature=oldtreeSubobj.strongSignature
+            quick+=1
+          else:
+            #print "recalculating strong sig for "+relname
+            strongSignature=StrongSignature.gen_fs(pathname)
+            slow+=1
+          subobj=File(leafname,weakSignature,strongSignature)
+        subobj.relname=relname
+        subobjs[i]=subobj
+        i=i+1
     return Directory(source_leafname,subobjs)
   gen_fs_dir=staticmethod(gen_fs_dir)
 
