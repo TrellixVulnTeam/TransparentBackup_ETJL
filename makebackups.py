@@ -31,15 +31,16 @@ def getBackupSetName (pathName):
 
 
 def main (args):
-  syntax = "Syntax: makebackups <root out dir> [path]..."
-  if len(args) < 1:
+  syntax = "Syntax: makebackups <root out dir> <mode> [path]..."
+  if len(args) < 2:
     exit(syntax)
 
   date = datetime.date.today()
   dateStr = str(date.year % 100).zfill(2) + str(date.month).zfill(2) + str(date.day).zfill(2)
 
   rootOutputDirPathName = args[0]
-  for backupSourcePathName in args[1:]:
+  mode = args[1]
+  for backupSourcePathName in args[2:]:
     backupSetName = getBackupSetName(backupSourcePathName)
     t = glob.glob(backupSetName + "[0-9][0-9][0-9][0-9][0-9][0-9].dtml")
     if len(t) > 1:
@@ -53,7 +54,7 @@ def main (args):
     outputDirPathName = os.path.join(rootOutputDirPathName, outputDirPathName)
 
     os.mkdir(outputDirPathName)
-    tbArgs = [sys.executable, os.path.join(os.path.dirname(sys.argv[0]), "transparentbackup.py"), "--backup-source", backupSourcePathName, "--output", outputDirPathName, "--scripttype", "PythonScript", "--skip-suffix", ".NOBACKUP"]
+    tbArgs = [sys.executable, os.path.join(os.path.dirname(sys.argv[0]), "transparentbackup.py"), "--backup-source", backupSourcePathName, "--output", outputDirPathName, "--scripttype", mode + "PythonScript", "--skip-suffix", ".NOBACKUP"]
     if dtmlFilePathName is not None:
       tbArgs += ["--diff-dtml", dtmlFilePathName]
     p = subprocess.Popen(tbArgs)

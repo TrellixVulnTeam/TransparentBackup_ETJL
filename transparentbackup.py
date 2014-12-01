@@ -698,11 +698,11 @@ def pathSplitImpl (out,path):
 
 
 
-class PythonScript(ScriptFile):
-  def __init__ (self,filename,forNow):
-    self.forNow=forNow
+class AbstractPythonScript(ScriptFile):
+  def __init__ (self,filename,zipping):
+    self.zipping=zipping
     self.file=open(filename+u".py",'wb')
-    if forNow:
+    if zipping:
       head="""
 
 import os
@@ -786,24 +786,36 @@ def rm(name):
     self.writeCmd("mkdir",name)
 
   def rmdir (self,name):
-    assert not self.forNow
+    assert not self.zipping
     self.writeCmd("rmdir",name)
 
   def cp (self,src,dst):
     self.writeCmd("cp",src,dst)
 
   def mv (self,src,dst):
-    assert not self.forNow
+    assert not self.zipping
     self.writeCmd("mv",src,dst)
 
   def rm (self,name):
-    assert not self.forNow
+    assert not self.zipping
     self.writeCmd("rm",name)
 
   def close (self):
     if self.tail:
       self.file.write("\n" + self.tail.strip())
     self.file.close()
+
+
+
+class ZippingPythonScript(AbstractPythonScript):
+  def __init__ (self,filename,forNow):
+    AbstractPythonScript.__init__(self,filename,forNow)
+
+
+
+class FilingPythonScript(AbstractPythonScript):
+  def __init__ (self,filename,forNow):
+    AbstractPythonScript.__init__(self,filename,False)
 
 
 

@@ -21,7 +21,7 @@ transparentbackup.py -b tests.in\00\src0 -o tests.new\00\src0 -s BatchFile --ski
 transparentbackup.py -d tests.new\00\src0\!fullstate.dtml -b tests.in\00\src1 -o tests.new\00\src1 -s BatchFile --skip ".NOBACKUP"
 transparentbackup.py -b tests.in\00\src0 -o tests.new\00\src0 -s BashScript --skip ".NOBACKUP"
 transparentbackup.py -d tests.new\00\src0\!fullstate.dtml -b tests.in\00\src1 -o tests.new\00\src1 -s BashScript --skip ".NOBACKUP"
-transparentbackup.py -b tests.in\00\src0 -o tests.new\00\src0 -s PythonScript --skip ".NOBACKUP"
-transparentbackup.py -d tests.new\00\src0\!fullstate.dtml -b tests.in\00\src1 -o tests.new\00\src1 -s PythonScript --skip ".NOBACKUP"
+transparentbackup.py -b tests.in\00\src0 -o tests.new\00\src0 -s ZippingPythonScript --skip ".NOBACKUP"
+transparentbackup.py -d tests.new\00\src0\!fullstate.dtml -b tests.in\00\src1 -o tests.new\00\src1 -s ZippingPythonScript --skip ".NOBACKUP"
 
 subst /D T:
