@@ -1,14 +1,9 @@
-# -*- coding: iso-8859-1 -*-
-#  -------------------------------------------------------------------
-#  Transparent Backup 1.1.0                       PYTHON COMPONENTS
-#  © Geoff Crossland 2005
-#
-#  1.0.0:
-#  Compares a directory tree with a DTML file and creates data
-#  about the differences between them.
-#
-#  1.1.0:
-# -----------------------------------------------------------------  #
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------
+#  Transparent Backup
+#  Â© Geoff Crossland 2005, 2012, 2014, 2017
+# ------------------------------------------------------------------------------
 import time
 import sys
 import string
@@ -20,11 +15,7 @@ import cgi
 import sgmllib
 import xml.sax.saxutils
 
-
-
-TMPDIR=u".tmp"
-
-
+TMPDIR=u".tb-tmp"
 
 def exit (msg):
   isinstance(msg,basestring)
@@ -33,8 +24,6 @@ def exit (msg):
   except:
     m=repr(msg)[2:-1]
   sys.exit(m)
-
-
 
 def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>]"
@@ -86,8 +75,6 @@ def main (args):
 
   transparentbackup(opt_backup_source,opt_diff_dtml,opt_skip_suffix,opt_output,scripttypeCls)
 
-
-
 def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scripttypeCls):
   if old_dtml==None:
     oldtree=DirectoryTree.gen_empty()
@@ -98,12 +85,10 @@ def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scriptt
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))
 
-
-
 quick=0
 slow=0
 
-class DirectoryTree(object):
+class DirectoryTree (object):
   relname_cache={}
   def relname_get (relname):
     return DirectoryTree.relname_cache.setdefault(relname,relname)
@@ -180,9 +165,7 @@ class DirectoryTree(object):
     file.write(u"</DTML>")
     file.close()
 
-
-
-class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
+class DirectoryTree_DTMLParser (sgmllib.SGMLParser):
   def processattrs (attrs):
     result={}
     for (name,value) in attrs:
@@ -243,13 +226,9 @@ class DirectoryTree_DTMLParser(sgmllib.SGMLParser):
     file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
     self.subobjstack[-1].append(file)
 
-
-
 NONCHAR=unichr(0xFFFF)
 
-
-
-class Object(object):
+class Object (object):
   def __init__ (self,leafname):
     if leafname==NONCHAR:
       exit("Error in Object: unable to support file or directory with name '"+leafname+"', which begins with U+FFFF")
@@ -265,19 +244,13 @@ class Object(object):
   def writedtml (self,file,depth):
     raise NotImplementedError
 
-
-
-class SentinelObject(object):
+class SentinelObject (object):
   def __init__ (self):
     self.leafname=NONCHAR
 
-
-
 sentinelobj=SentinelObject()
 
-
-
-class Directory(Object):
+class Directory (Object):
   def __init__ (self,leafname,subobjs):
     Object.__init__(self,leafname)
     #print "Creating Directory '"+unicode(leafname)+"'"
@@ -293,9 +266,7 @@ class Directory(Object):
     file.write(u" "*depth)
     file.write(u"</DIR>\n")
 
-
-
-class File(Object):
+class File (Object):
   def __init__ (self,leafname,weakSignature,strongSignature):
     Object.__init__(self,leafname)
     #print "Creating File '"+unicode(leafname)+"'"
@@ -315,9 +286,7 @@ class File(Object):
       file.write(attrs[name])
     file.write(u">\n")
 
-
-
-class WeakSignature(object):
+class WeakSignature (object):
   def __init__ (self,size,lastModifiedTime):
     self.size=int(size)
     if self.size<0:
@@ -360,16 +329,12 @@ class WeakSignature(object):
     attrs["size"]=unicode(self.size)
     attrs["time"]=unicode(self.lastModifiedTime)
 
-
-
-def renderMd5sum(val):
+def renderMd5sum (val):
   assert isinstance(val,str)
   assert len(val)==16
   return u"".join([hex(ord(c))[2:].upper().zfill(2) for c in val])
 
-
-
-def parseMd5sum(val):
+def parseMd5sum (val):
   isinstance(val,basestring)
   if len(val)!=32:
     exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
@@ -378,9 +343,7 @@ def parseMd5sum(val):
   except ValueError:
     exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
 
-
-
-class StrongSignature(object):
+class StrongSignature (object):
   def __init__ (self,size,md5sum):
     self.size=int(size)
     if self.size<0:
@@ -433,9 +396,7 @@ class StrongSignature(object):
     attrs["size"]=unicode(self.size)
     attrs["md5sum"]=renderMd5sum(self.md5sum)
 
-
-
-class DirectoryTreeDiffer(object):
+class DirectoryTreeDiffer (object):
   STATUS_UNMODIFIED=0
   STATUS_MODIFIED=1
   STATUS_DELETED=2
@@ -552,9 +513,7 @@ class DirectoryTreeDiffer(object):
   def file_unmodified (self,oldobj,newobj,files):
     raise NotImplementedError
 
-
-
-class ScriptFile(object):
+class ScriptFile (object):
   def mkdir (self,name):
     raise NotImplementedError
 
@@ -576,9 +535,7 @@ class ScriptFile(object):
   def close (self):
     raise NotImplementedError
 
-
-
-class BashScript(ScriptFile):
+class BashScript (ScriptFile):
   def esc (s):
     return s.replace("\\","\\\\").replace("$","\\$").replace("`","\\$").replace("\"","\\\"")
   esc=staticmethod(esc)
@@ -629,8 +586,6 @@ class BashScript(ScriptFile):
   def close (self):
     self.file.close()
 
-
-
 def pathSplit (path):
   r=[]
   pathSplitImpl(r,path)
@@ -644,9 +599,7 @@ def pathSplitImpl (out,path):
     pathSplitImpl(out,head)
     out.append(tail)
 
-
-
-class AbstractPythonScript(ScriptFile):
+class AbstractPythonScript (ScriptFile):
   def __init__ (self,filename,zipping):
     self.zipping=zipping
     self.file=open(filename+u".py",'wb')
@@ -657,21 +610,21 @@ import os
 import os.path
 import zipfile
 
-def mkdir(name):
+def mkdir (name):
   pass
 
 ALREADY_COMPRESSEDS = set(("zip", "tgz", "gz", "jpg", "png", "mp3", "flac", "oog", "avi", "mkv", "flv", "mov", "mp4", "m4a", "m4v"))
 
 z = None
 
-def startZip(p):
+def startZip (p):
   global z
   z = zipfile.ZipFile(p, 'w', zipfile.ZIP_DEFLATED, True)
 
-def endZip():
+def endZip ():
   z.close()
 
-def cp(src, dst):
+def cp (src, dst):
   mode = zipfile.ZIP_DEFLATED
   if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
     mode = zipfile.ZIP_STORED
@@ -692,21 +645,21 @@ import os
 import os.path
 import shutil
 
-def mkdir(name):
+def mkdir (name):
   p = os.path.join(*name)
   if not os.path.isdir(p):
     os.makedirs(p)
 
-def rmdir(name):
+def rmdir (name):
   os.rmdir(os.path.join(*name))
 
-def cp(src, dst):
+def cp (src, dst):
   shutil.copy2(os.path.join(*src), os.path.join(*dst))
 
-def mv(src, dst):
+def mv (src, dst):
   shutil.move(os.path.join(*src), os.path.join(*dst))
 
-def rm(name):
+def rm (name):
   os.remove(os.path.join(*name))
 
 """
@@ -753,21 +706,15 @@ def rm(name):
       self.file.write("\n" + self.tail.strip())
     self.file.close()
 
-
-
-class ZippingPythonScript(AbstractPythonScript):
+class ZippingPythonScript (AbstractPythonScript):
   def __init__ (self,filename,forNow):
     AbstractPythonScript.__init__(self,filename,forNow)
 
-
-
-class FilingPythonScript(AbstractPythonScript):
+class FilingPythonScript (AbstractPythonScript):
   def __init__ (self,filename,forNow):
     AbstractPythonScript.__init__(self,filename,False)
 
-
-
-class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
+class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
   class Files:
     def __init__ (self):
       self.oldfiles={}
@@ -926,10 +873,9 @@ class ScriptDirectoryTreeDiffer(DirectoryTreeDiffer):
   def file_unmodified (self,oldobj,newobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
 
-
-
 if __name__=="__main__":
   start=time.time()
-  main([arg.decode(sys.stdin.encoding) for arg in sys.argv[1:]])
+  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
+  main([arg.decode(envEncoding) for arg in sys.argv[1:]])
   print "Took "+unicode(time.time()-start)+" secs"
   print "Of "+unicode(quick+slow)+" files, "+unicode((quick*100)/(quick+slow))+"% didn't need to be re-hashed"

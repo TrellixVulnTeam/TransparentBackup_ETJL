@@ -1,11 +1,14 @@
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------
+#  Python Unzipping Tool
+#  © Geoff Crossland 2012
+# ------------------------------------------------------------------------------
 import sys
 import zipfile
 import os
 import os.path
 import time
-
-
 
 def main (args):
   syntax="Syntax: unzipdir <zipfile> <outputdir>"
@@ -24,7 +27,6 @@ def main (args):
     os.utime(pathName, (t, time.mktime(zinfo.date_time + (-1, -1, -1))))
   z.close()
 
-
-
 if __name__=="__main__":
-  main([arg.decode(sys.stdin.encoding) for arg in sys.argv[1:]])
+  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
+  main([arg.decode(envEncoding) for arg in sys.argv[1:]])

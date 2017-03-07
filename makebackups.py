@@ -1,4 +1,9 @@
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+# ------------------------------------------------------------------------------
+#  Transparent Backup Wrapper
+#  © Geoff Crossland 2012-2014
+# ------------------------------------------------------------------------------
 import sys
 import os
 import datetime
@@ -8,27 +13,19 @@ import subprocess
 import os.path
 import shutil
 
-
-
 BUILDER_LEAF_NAME = u"!builddiffs.py"
 STATE_LEAF_NAME = u"!fullstate.dtml"
-
-
 
 def exit (msg):
   isinstance(msg,basestring)
   try:
-    m=str(msg)
+    m = str(msg)
   except:
-    m=repr(msg)[2:-1]
+    m = repr(msg)[2:-1]
   sys.exit(m)
-
-
 
 def getBackupSetName (pathName):
   return urllib.quote(os.path.basename(pathName), safe = "")
-
-
 
 def main (args):
   syntax = "Syntax: makebackups <root out dir> <mode> [path]..."
@@ -73,7 +70,6 @@ def main (args):
       shutil.move(dtmlFilePathName, dtmlFilePathName + ".old")
     shutil.move(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
 
-
-
 if __name__ == "__main__":
-  main([arg.decode(sys.stdin.encoding) for arg in sys.argv[1:]])
+  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
+  main([arg.decode(envEncoding) for arg in sys.argv[1:]])
