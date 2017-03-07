@@ -578,58 +578,6 @@ class ScriptFile(object):
 
 
 
-class BatchFile(ScriptFile):
-  def esc (s):
-    try:
-      s = s.encode('cp1252')
-    except UnicodeError:
-      exit("Error in BatchFile: path '"+s+"' cannot be represented in Windows-1252")
-    return s.replace("%","%%")
-  esc=staticmethod(esc)
-
-  def __init__ (self,filename,forNow):
-    self.file=open(filename+u".bat",'wb')
-    self.file.write("chcp 1252\n")
-
-  def comment (self,body):
-    self.file.write("REM ")
-    self.file.write(body)
-    self.file.write("\n")
-
-  def mkdir (self,name):
-    self.file.write("MKDIR \"")
-    self.file.write(BatchFile.esc(name))
-    self.file.write("\"\n")
-
-  def rmdir (self,name):
-    self.file.write("RMDIR \"")
-    self.file.write(BatchFile.esc(name))
-    self.file.write("\"\n")
-
-  def cp (self,src,dst):
-    self.file.write("COPY \"")
-    self.file.write(BatchFile.esc(src))
-    self.file.write("\" \"")
-    self.file.write(BatchFile.esc(dst))
-    self.file.write("\"\n")
-
-  def mv (self,src,dst):
-    self.file.write("MOVE \"")
-    self.file.write(BatchFile.esc(src))
-    self.file.write("\" \"")
-    self.file.write(BatchFile.esc(dst))
-    self.file.write("\"\n")
-
-  def rm (self,name):
-    self.file.write("DEL /F \"")
-    self.file.write(BatchFile.esc(name))
-    self.file.write("\"\n")
-
-  def close (self):
-    self.file.close()
-
-
-
 class BashScript(ScriptFile):
   def esc (s):
     return s.replace("\\","\\\\").replace("$","\\$").replace("`","\\$").replace("\"","\\\"")
