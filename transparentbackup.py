@@ -281,7 +281,7 @@ class File (Object):
     attrs={}
     self.weakSignature.getdtml(attrs)
     self.strongSignature.getdtml(attrs)
-    for name in ["size", "md5sum", "time"]:
+    for name in ("size", "sha512sum", "time"):
       file.write(u" "+name+"=")
       file.write(attrs[name])
     file.write(u">\n")
@@ -329,32 +329,32 @@ class WeakSignature (object):
     attrs["size"]=unicode(self.size)
     attrs["time"]=unicode(self.lastModifiedTime)
 
-def renderMd5sum (val):
-  assert isinstance(val,str)
-  assert len(val)==16
-  return u"".join([hex(ord(c))[2:].upper().zfill(2) for c in val])
+OCTET_HEX_STRS = tuple(hex(b)[2:].zfill(2) for b in xrange(0, 256))
 
-def parseMd5sum (val):
-  isinstance(val,basestring)
-  if len(val)!=32:
-    exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
+def renderHash (val):
+  assert isinstance(val, str)
+  assert len(val) == 64
+  return u"".join(OCTET_HEX_STRS[ord(b)] for b in val)
+
+def parseHash (val):
+  assert isinstance(val, basestring)
+  if len(val) != 128:
+    exit("Error in StrongSignature.gen_dtml: sha512sum '" + val + "' invalid")
   try:
-    return "".join([chr(int(val[i:i+2],16)) for i in xrange(0,32,2)])
+    return b"".join(chr(int(val[i:i + 2], 16)) for i in xrange(0, 128, 2))
   except ValueError:
-    exit("Error in StrongSignature.gen_dtml: md5sum '"+val+"' invalid")
+    exit("Error in StrongSignature.gen_dtml: sha512sum '" + val + "' invalid")
 
 class StrongSignature (object):
-  def __init__ (self,size,md5sum):
+  def __init__ (self, size, sha512sum):
     self.size=int(size)
     if self.size<0:
       exit("Error in StrongSignature: initialised with size '"+unicode(size)+"', which is invalid")
-    self.md5sum=md5sum
+    self.sha512sum = sha512sum
 
   def gen_fs (pathname):
-    #print "Creating StrongSignature for '"+unicode(pathname)+"'"
     size=os.stat(pathname).st_size
-    #print "  size is "+unicode(size)
-    md5sum=hashlib.md5()
+    hashBuilder = hashlib.sha512()
     file=open(pathname,'rb')
     consumed=0
     while True:
@@ -362,18 +362,17 @@ class StrongSignature (object):
       if len(block)==0:
         break
       consumed=consumed+len(block)
-      md5sum.update(block)
+      hashBuilder.update(block)
     file.close()
     if consumed!=size:
       exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
-    #print "  md5sum is "+renderMd5sum(md5sum.digest())
-    return StrongSignature(size,md5sum.digest())
+    return StrongSignature(size, hashBuilder.digest())
   gen_fs=staticmethod(gen_fs)
 
   def gen_dtml (attrs):
-    if not attrs.has_key("size") or not attrs.has_key("md5sum"):
-      exit("Error in StrongSignature.gen_dtml: size and md5sum attributes both required")
-    return StrongSignature(attrs["size"],parseMd5sum(attrs["md5sum"]))
+    if not attrs.has_key("size") or not attrs.has_key("sha512sum"):
+      exit("Error in StrongSignature.gen_dtml: size and sha512sum attributes both required")
+    return StrongSignature(attrs["size"], parseHash(attrs["sha512sum"]))
   gen_dtml=staticmethod(gen_dtml)
 
   def __cmp__ (self,other):
@@ -383,18 +382,18 @@ class StrongSignature (object):
       return -1
     if self.size>other.size:
       return 1
-    if self.md5sum<other.md5sum:
+    if self.sha512sum < other.sha512sum:
       return -1
-    if self.md5sum>other.md5sum:
+    if self.sha512sum > other.sha512sum:
       return 1
     return 0
 
   def __hash__ (self):
-    return (self.size^self.md5sum.__hash__())
+    return (self.size ^ hash(self.sha512sum))
 
   def getdtml (self,attrs):
     attrs["size"]=unicode(self.size)
-    attrs["md5sum"]=renderMd5sum(self.md5sum)
+    attrs["sha512sum"] = renderHash(self.sha512sum)
 
 class DirectoryTreeDiffer (object):
   STATUS_UNMODIFIED=0

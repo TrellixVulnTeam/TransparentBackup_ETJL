@@ -1,29 +1,29 @@
 <DTML>
   <DIR name="A Subdirectory">
-    <FILE name="Cross-Moved and Edited File.txt" size=121 md5sum=9D4ED49EDA77A0BA71E816D15254AABA time=1270424572000>
-    <FILE name="Cross-Moved and Unedited File.txt" size=76 md5sum=4E093873DEF058F2C4EDEC2A46E606B3 time=1270424352000>
-    <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424349000>
-    <FILE name="Moved Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424600000>
-    <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D time=1270424530000>
-    <FILE name="Moved and Unedited File.txt" size=75 md5sum=A07027297155335586B6ACD456B71DCE time=1270424345000>
-    <FILE name="Swapped File.txt" size=76 md5sum=FF877E0F86F7891FB1232922359FFE19 time=1270424339000>
-    <FILE name="Unmoved &amp; Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424569000>
-    <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC time=1270424337000>
+    <FILE name="Cross-Moved and Edited File.txt" size=121 sha512sum=e18efb53b11787367b7b22bd3cd9e6ac4423d2d6a38dad01c6708aeaf20a57796966c921b73e05d9f2a936d5553468164c4b8046957187ce13e205c96b2c7be9 time=1270424572000>
+    <FILE name="Cross-Moved and Unedited File.txt" size=76 sha512sum=bbe69065e11cc2972e0b8ea7c665edc884ec1839d86b3a0bb320794c41d291bf24a638ddd88a769fd81750a95d3ddd45d0417940581e95c4fdfcc04c5b042b64 time=1270424352000>
+    <FILE name="Deleted File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424349000>
+    <FILE name="Moved Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424600000>
+    <FILE name="Moved and Edited File.txt" size=120 sha512sum=bf1d2159f885abb5154c209cc232d594dd401ec0695a619e5c20f454765f0a8743a33a9a3e625f74c52ffeac9ad9ae2d7c8d783cd4a4d7c89af075d49a452c9e time=1270424530000>
+    <FILE name="Moved and Unedited File.txt" size=75 sha512sum=78d24cd68cdab2ca06d59b0d74aa05c4a456066e5265f7e8dbb7339f5b9c60926ce9721644a255e3109902f8e5b60df395ce47c5578ae0a8705d067d815811f4 time=1270424345000>
+    <FILE name="Swapped File.txt" size=76 sha512sum=003e5dd8992cfb55f5cc6194fd3109564940d0eda62b72f2c4e4f5d1b468368b0decb35a56d1ef3033c1865b904eb0bda735f8812f29f236d0420e3b34cc6b1a time=1270424339000>
+    <FILE name="Unmoved &amp; Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424569000>
+    <FILE name="Unmoved and Edited File.txt" size=43 sha512sum=59338553c086cecb9b84f880a54b533ef74b38e17781469828697bc5684ad96fbd9ee0e22a58bf028108c1793d5742f7baecc23fe455d51ede543560983760f6 time=1270424337000>
   </DIR>
-  <FILE name="Another Unmoved and Unedited File.txt" size=43 md5sum=610AC0727B961EB8BCD0F9AC2B170ED7 time=1270424764000>
-  <FILE name="Deleted File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424546000>
+  <FILE name="Another Unmoved and Unedited File.txt" size=43 sha512sum=e2a1eff09524642952dc7abfa7ba95a2018c8e3870e8a5352eb94c11994badf7dc99ecfd7d9170eafd160397249f55d3942698e160ed0d58d9bd5ea87e496bf6 time=1270424764000>
+  <FILE name="Deleted File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424546000>
   <DIR name="Deleted Subdirectory">
-    <FILE name="Deleted File.txt" size=62 md5sum=D52EEB1BB67A6CA5FC4F5849BAD28E5A time=1270424791000>
+    <FILE name="Deleted File.txt" size=62 sha512sum=e05fe03d83e9dd545a9968d575abf396c7c14924a2e343ebae74ad4505a2bb66f48db9dbe837d9d8b0671833e69d7dd0eebf34d6b8a0ba704766ec7646902d62 time=1270424791000>
   </DIR>
-  <FILE name="Lying File.txt" size=25 md5sum=687F252324782A2D323D5E4583742275 time=1270424549000>
+  <FILE name="Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424549000>
   <DIR name="Moved Subdirectory">
-    <FILE name="Deleted File.txt" size=55 md5sum=8D9D78645C780E9D6A9682FA717966A3 time=1270424814000>
-    <FILE name="Moved and Edited File.txt" size=153 md5sum=486373BA113AD073A2F1C5B96FD5B665 time=1270424855000>
-    <FILE name="Moved and Unedited File.txt" size=108 md5sum=6ADF984707614DF356E45B6E6C08F233 time=1270424807000>
+    <FILE name="Deleted File.txt" size=55 sha512sum=9f6966c214291323f28d7cfc592fad21689aaad6f7622e77a03c70efe9b67534f4c6661dc37de60fadf261f602ea2ea7c66b73e9dd1adb5a64be0ea527b8b054 time=1270424814000>
+    <FILE name="Moved and Edited File.txt" size=153 sha512sum=2bdf13de466adb4074114112664981074e4f17193dde481b9ab6def4231ff42376ee42dd09ccbd8136b9df9125ba7ab99fd65a8cacab7f4c72b340106b2ada19 time=1270424855000>
+    <FILE name="Moved and Unedited File.txt" size=108 sha512sum=54a6c879d150f4aa167cb717eba598da3e6997f7ecd1a1035582626bf81993aebfd002bc2468c9d91ab32803326d9ccd3c66fb38c6bfd5f094cb4662b4d27656 time=1270424807000>
   </DIR>
-  <FILE name="Moved and Edited File.txt" size=120 md5sum=24227AFF383DB050FC56A31AA7636E0D time=1270424602000>
-  <FILE name="Moved and Unedited File.txt" size=81 md5sum=6AD9EB911726C92C35CB2B86782F4F1C time=1270424784000>
-  <FILE name="Swapped File.txt" size=76 md5sum=60CA26E3D5B636A39443000400E5E7E4 time=1270424538000>
-  <FILE name="Unmoved and Edited File.txt" size=43 md5sum=8E46E72BCC2371457E7607FFA01CB9DC time=1270424537000>
-  <FILE name="Unmoved and Unedited File.txt" size=42 md5sum=10E1E692EE9F3EA680F7F52C32A09105 time=1270424314000>
+  <FILE name="Moved and Edited File.txt" size=120 sha512sum=bf1d2159f885abb5154c209cc232d594dd401ec0695a619e5c20f454765f0a8743a33a9a3e625f74c52ffeac9ad9ae2d7c8d783cd4a4d7c89af075d49a452c9e time=1270424602000>
+  <FILE name="Moved and Unedited File.txt" size=81 sha512sum=6aca6e23096ea73e2efbfec1b935049d9443aec53642e27f513464fd18080282520bb0bf7b9c3a7894d5cec80cba5e0e958629c98dc123c31701a17cd1741f68 time=1270424784000>
+  <FILE name="Swapped File.txt" size=76 sha512sum=35715d7fb8da9738dc46dfa479301dc5ddd3af452ea21c6bf2ba73c2cea58719eea535a99f1f255e754502d75ca4db3a4280f012aefd3ccef1891bc810e2d7d2 time=1270424538000>
+  <FILE name="Unmoved and Edited File.txt" size=43 sha512sum=59338553c086cecb9b84f880a54b533ef74b38e17781469828697bc5684ad96fbd9ee0e22a58bf028108c1793d5742f7baecc23fe455d51ede543560983760f6 time=1270424537000>
+  <FILE name="Unmoved and Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
 </DTML>
