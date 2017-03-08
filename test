@@ -3,6 +3,8 @@ export EXEC_DIR="$(realpath "$(dirname "${0}")")"
 
 ln -s "${EXEC_DIR}" /tmp/TransparentBackup
 
+rm -rf tests.new 2>/dev/null
+
 for t in "src0" "src1"
 do
   rm -rf tests.in/00/${t}

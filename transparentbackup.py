@@ -49,21 +49,21 @@ def main (args):
       opt_scripttype=value
     if option=="--skip-suffix":
       opt_skip_suffix=value
-  if opt_backup_source==None:
+  if opt_backup_source is None:
     exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
     exit("Backup source path (-b) is not a directory\n"+syntax)
-  if opt_output==None:
+  if opt_output is None:
     exit("No output path (-o) supplied\n"+syntax)
   if not os.path.isdir(opt_output):
     exit("Output path (-o) is not a directory\n"+syntax)
-  if opt_scripttype==None:
+  if opt_scripttype is None:
     exit("No script type (-s) supplied\n"+syntax)
   scripttypeCls=sys.modules[__name__].__dict__.get(opt_scripttype)
   if not isinstance(scripttypeCls,type) or ScriptFile not in scripttypeCls.__mro__:
     exit("Script type (-s) is not valid\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
-  if opt_diff_dtml!=None:
+  if opt_diff_dtml is not None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
 
   print "Backup source: "+opt_backup_source
@@ -76,7 +76,7 @@ def main (args):
   transparentbackup(opt_backup_source,opt_diff_dtml,opt_skip_suffix,opt_output,scripttypeCls)
 
 def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scripttypeCls):
-  if old_dtml==None:
+  if old_dtml is None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
@@ -130,23 +130,25 @@ class DirectoryTree (object):
         pathname=os.path.join(source_pathname,leafname)
         relname=DirectoryTree.relname_get(os.path.join(source_relname,leafname))
         oldtreeSubobj=oldtreeSubobjs.get(leafname,None)
-        if os.path.isdir(pathname):
+        isLink = os.path.islink(pathname)
+        if not isLink and os.path.isdir(pathname):
           if not isinstance(oldtreeSubobj,Directory):
             oldtreeSubobj=None
           subobj=DirectoryTree.gen_fs_dir(leafname,pathname,relname,oldtreeSubobj,skip_suffix)
-        else:
-          if not isinstance(oldtreeSubobj,File):
+        elif isLink or os.path.isfile(pathname):
+          fileCls = (RegularFile, Symlink)[isLink]
+          if not isinstance(oldtreeSubobj, fileCls):
             oldtreeSubobj=None
-          weakSignature=WeakSignature.gen_fs(pathname)
+          weakSignature = WeakSignature.gen_fs(pathname, fileCls)
           if oldtreeSubobj and oldtreeSubobj.weakSignature==weakSignature:
-            #print "assuming that "+relname+" is unchanged"
             strongSignature=oldtreeSubobj.strongSignature
             quick+=1
           else:
-            #print "recalculating strong sig for "+relname
-            strongSignature=StrongSignature.gen_fs(pathname)
+            strongSignature = StrongSignature.gen_fs(pathname, fileCls)
             slow+=1
-          subobj=File(leafname,weakSignature,strongSignature)
+          subobj = fileCls(leafname, weakSignature, strongSignature)
+        else:
+          exit("Error while reading backup source: file '" + pathname + "' is neither a link nor a regular file nor a directory")
         subobj.relname=relname
         subobjs[i]=subobj
         i=i+1
@@ -217,14 +219,20 @@ class DirectoryTree_DTMLParser (sgmllib.SGMLParser):
     dir.relname=self.dirrelnamestack.pop()
     self.subobjstack[-1].append(dir)
 
-  def do_file (self,attrs):
+  def _doFile (self, attrs, fileCls):
     attrs=DirectoryTree_DTMLParser.processattrs(attrs)
     if not attrs.has_key("name"):
-      exit("Error in DirectoryTree: FILE without name (attributes are "+unicode(attrs)+")")
+      exit("Error in DirectoryTree: " + fileCls.TAG + " without name (attributes are " + unicode(attrs) + ")")
     assert isinstance(attrs["name"],unicode)
-    file=File(attrs["name"],WeakSignature.gen_dtml(attrs),StrongSignature.gen_dtml(attrs))
+    file = fileCls(attrs["name"], WeakSignature.gen_dtml(attrs, fileCls), StrongSignature.gen_dtml(attrs, fileCls))
     file.relname=DirectoryTree.relname_get(os.path.join(self.dirrelnamestack[-1],attrs["name"]))
     self.subobjstack[-1].append(file)
+
+  def do_file (self, attrs):
+    self._doFile(attrs, RegularFile)
+
+  def do_symlink (self,attrs):
+    self._doFile(attrs, Symlink)
 
 NONCHAR=unichr(0xFFFF)
 
@@ -237,8 +245,8 @@ class Object (object):
     self.leafname=leafname
 
   def __cmp__ (self,other):
-    if other==None:
-      return 1
+    if not isinstance(other, Object):
+      return NotImplemented
     return cmp(self.leafname,other.leafname)
 
   def writedtml (self,file,depth):
@@ -267,15 +275,25 @@ class Directory (Object):
     file.write(u"</DIR>\n")
 
 class File (Object):
+  @classmethod
+  def stat (cls, pathname):
+    raise NotImplementedError
+
+  @classmethod
+  def readBlocks (cls, pathname):
+    raise NotImplementedError
+
   def __init__ (self,leafname,weakSignature,strongSignature):
     Object.__init__(self,leafname)
     #print "Creating File '"+unicode(leafname)+"'"
+    assert weakSignature.fileCls is self.__class__
     self.weakSignature=weakSignature
+    assert strongSignature.fileCls is self.__class__
     self.strongSignature=strongSignature
 
   def writedtml (self,file,depth):
     file.write(u" "*depth)
-    file.write(u"<FILE name=\"")
+    file.write(u"<" + self.TAG + " name=\"")
     file.write(cgi.escape(self.leafname,True))
     file.write(u"\"")
     attrs={}
@@ -286,44 +304,73 @@ class File (Object):
       file.write(attrs[name])
     file.write(u">\n")
 
+class RegularFile (File):
+  @classmethod
+  def stat (cls, pathname):
+    return os.stat(pathname)
+
+  @classmethod
+  def readBlocks (cls, pathname):
+    h = open(pathname, 'rb')
+    while True:
+      block = h.read(256*1024)
+      if len(block) == 0:
+        break
+      yield block
+    h.close()
+
+  TAG = "FILE"
+
+class Symlink (File):
+  @classmethod
+  def stat (cls, pathname):
+    return os.lstat(pathname)
+
+  @classmethod
+  def readBlocks (cls, pathname):
+    yield codecs.encode(os.readlink(pathname), 'utf-8')
+
+  TAG = "SYMLINK"
+
 class WeakSignature (object):
-  def __init__ (self,size,lastModifiedTime):
+  def __init__ (self, fileCls, size, lastModifiedTime):
+    self.fileCls = fileCls
     self.size=int(size)
     if self.size<0:
       exit("Error in WeakSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.lastModifiedTime=int(lastModifiedTime)
 
-  def gen_fs (pathname):
+  @staticmethod
+  def gen_fs (pathname, fileCls):
     #print "Creating WeakSignature for '"+unicode(pathname)+"'"
-    fileInfo=os.stat(pathname)
+    fileInfo = fileCls.stat(pathname)
     size=fileInfo.st_size
     #print "  size is "+unicode(size)
     lastModifiedTime=int(fileInfo.st_mtime*1000)
     #print "  lastModifiedTime is "+unicode(lastModifiedTime)
-    return WeakSignature(size,lastModifiedTime)
-  gen_fs=staticmethod(gen_fs)
+    return WeakSignature(fileCls, size, lastModifiedTime)
 
-  def gen_dtml (attrs):
+  @staticmethod
+  def gen_dtml (attrs, fileCls):
     if not attrs.has_key("size") or not attrs.has_key("time"):
       exit("Error in WeakSignature.gen_dtml: size and time attributes both required")
-    return WeakSignature(attrs["size"],attrs["time"])
-  gen_dtml=staticmethod(gen_dtml)
+    return WeakSignature(fileCls, attrs["size"], attrs["time"])
 
-  def __cmp__ (self,other):
-    if other==None:
-      return 1
-    if self.size<other.size:
-      return -1
-    if self.size>other.size:
-      return 1
-    if self.lastModifiedTime<other.lastModifiedTime:
-      return -1
-    if self.lastModifiedTime>other.lastModifiedTime:
-      return 1
-    return 0
+  def _eq (self, o):
+    return self.fileCls is o.fileCls and self.size == o.size and self.lastModifiedTime == o.lastModifiedTime
+
+  def __eq__ (self, o):
+    if not isinstance(o, WeakSignature):
+      return NotImplemented
+    return self._eq(o)
+
+  def __ne__ (self, o):
+    if not isinstance(o, WeakSignature):
+      return NotImplemented
+    return not self._eq(o)
 
   def __hash__ (self):
-    return (self.size^self.lastModifiedTime)
+    return (id(self.fileCls) ^ self.size ^ self.lastModifiedTime)
 
   def getdtml (self,attrs):
     attrs["size"]=unicode(self.size)
@@ -346,50 +393,46 @@ def parseHash (val):
     exit("Error in StrongSignature.gen_dtml: sha512sum '" + val + "' invalid")
 
 class StrongSignature (object):
-  def __init__ (self, size, sha512sum):
+  def __init__ (self, fileCls, size, sha512sum):
+    self.fileCls = fileCls
     self.size=int(size)
     if self.size<0:
       exit("Error in StrongSignature: initialised with size '"+unicode(size)+"', which is invalid")
     self.sha512sum = sha512sum
 
-  def gen_fs (pathname):
-    size=os.stat(pathname).st_size
+  @staticmethod
+  def gen_fs (pathname, fileCls):
+    size = fileCls.stat(pathname).st_size
     hashBuilder = hashlib.sha512()
-    file=open(pathname,'rb')
     consumed=0
-    while True:
-      block=file.read(256*1024)
-      if len(block)==0:
-        break
+    for block in fileCls.readBlocks(pathname):
       consumed=consumed+len(block)
       hashBuilder.update(block)
-    file.close()
     if consumed!=size:
       exit("Error while reading file for hashing: file '"+pathname+"' not properly read")
-    return StrongSignature(size, hashBuilder.digest())
-  gen_fs=staticmethod(gen_fs)
+    return StrongSignature(fileCls, size, hashBuilder.digest())
 
-  def gen_dtml (attrs):
+  @staticmethod
+  def gen_dtml (attrs, fileCls):
     if not attrs.has_key("size") or not attrs.has_key("sha512sum"):
       exit("Error in StrongSignature.gen_dtml: size and sha512sum attributes both required")
-    return StrongSignature(attrs["size"], parseHash(attrs["sha512sum"]))
-  gen_dtml=staticmethod(gen_dtml)
+    return StrongSignature(fileCls, attrs["size"], parseHash(attrs["sha512sum"]))
 
-  def __cmp__ (self,other):
-    if other==None:
-      return 1
-    if self.size<other.size:
-      return -1
-    if self.size>other.size:
-      return 1
-    if self.sha512sum < other.sha512sum:
-      return -1
-    if self.sha512sum > other.sha512sum:
-      return 1
-    return 0
+  def _eq (self, o):
+    return self.fileCls is o.fileCls and self.size == o.size and self.sha512sum == o.sha512sum
+
+  def __eq__ (self, o):
+    if not isinstance(o, StrongSignature):
+      return NotImplemented
+    return self._eq(o)
+
+  def __ne__ (self, o):
+    if not isinstance(o, StrongSignature):
+      return NotImplemented
+    return not self._eq(o)
 
   def __hash__ (self):
-    return (self.size ^ hash(self.sha512sum))
+    return (id(self.fileCls) ^ self.size ^ hash(self.sha512sum))
 
   def getdtml (self,attrs):
     attrs["size"]=unicode(self.size)
@@ -564,7 +607,7 @@ class BashScript (ScriptFile):
     self.file.write("\"\n")
 
   def cp (self,src,dst):
-    self.file.write("cp \"")
+    self.file.write("cp --no-dereference --preserve=all \"")
     self.file.write(BashScript.esc(BashScript.winpathmap(src)))
     self.file.write("\" \"")
     self.file.write(BashScript.esc(BashScript.winpathmap(dst)))
@@ -779,7 +822,7 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,File):
         if len(oldsubobj.copies)>0:
-          if tmpdir==None:
+          if tmpdir is None:
             tmpdir=os.path.join(olddir.relname,TMPDIR)
             self.preapplydiffs_file.mkdir(tmpdir)
           if oldsubobj.status==DirectoryTreeDiffer.STATUS_MODIFIED:
@@ -821,7 +864,7 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
         self.diff_post_clear(oldsubobj)
         if oldsubobj.status==DirectoryTreeDiffer.STATUS_DELETED:
           self.preapplydiffs_file.rmdir(oldsubobj.relname)
-    if olddir.tmpdir!=None:
+    if olddir.tmpdir is not None:
       self.preapplydiffs_file.rmdir(olddir.tmpdir)
 
   def diff_post_copynew (self,newdir):
@@ -846,10 +889,10 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
 
   def file_gen (self,newobj,newdir,files):
     obj=files.oldfiles.get(newobj.strongSignature,None)
-    if obj==None:
+    if obj is None:
       # The new file is not a direct copy of an old one
       obj=files.newfiles.get(newobj.strongSignature,None)
-    if obj!=None:
+    if obj is not None:
       # The new file is a copy of an old one or another new one
       obj.copies.append(newobj)
     else:
