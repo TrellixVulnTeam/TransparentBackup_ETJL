@@ -587,7 +587,7 @@ class ScriptFile (object):
 
 class BashScript (ScriptFile):
   def esc (s):
-    return s.replace("\\","\\\\").replace("$","\\$").replace("`","\\$").replace("\"","\\\"")
+    return s.replace("\\","\\\\").replace("$","\\$").replace("`","\\`").replace("\"","\\\"")
   esc=staticmethod(esc)
 
   def winpathmap (path):
