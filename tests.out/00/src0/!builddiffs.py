@@ -1,9 +1,13 @@
+import sys
 import os
 import os.path
 import zipfile
+import time
 
 def mkdir (name):
   pass
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
 
 ALREADY_COMPRESSEDS = set(("zip", "tgz", "gz", "jpg", "png", "mp3", "flac", "oog", "avi", "mkv", "flv", "mov", "mp4", "m4a", "m4v"))
 
@@ -17,10 +21,19 @@ def endZip ():
   z.close()
 
 def cp (src, dst):
-  mode = zipfile.ZIP_DEFLATED
-  if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
-    mode = zipfile.ZIP_STORED
-  z.write(os.path.join(*src), os.path.join(*dst), mode)
+  s = os.path.join(*src)
+  if os.path.islink(s):
+    st = os.lstat(s)
+    # (see http://www.mail-archive.com/python-list@python.org/msg34223.html and zipfile.ZipFile.write())
+    info = zipfile.ZipInfo("/".join(p for p in dst if p != os.curdir), time.localtime(st.st_mtime)[0:6])
+    info.create_system = 3
+    info.external_attr = (st.st_mode & 0xFFFF) << 16
+    z.writestr(info, os.readlink(s.encode(FS_ENCODING)))
+  else:
+    mode = zipfile.ZIP_DEFLATED
+    if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
+      mode = zipfile.ZIP_STORED
+    z.write(s, os.path.join(*dst), mode)
 
 startZip("diffs.zip")
 
