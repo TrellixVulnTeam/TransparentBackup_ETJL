@@ -321,6 +321,14 @@ class RegularFile (File):
 
   TAG = "FILE"
 
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+def readlinkRaw (pathName):
+  assert isinstance(pathName, unicode)
+  body = os.readlink(pathName.encode(FS_ENCODING))
+  assert isinstance(body, bytes)
+  return body
+
 class Symlink (File):
   @classmethod
   def stat (cls, pathname):
@@ -328,7 +336,7 @@ class Symlink (File):
 
   @classmethod
   def readBlocks (cls, pathname):
-    yield codecs.encode(os.readlink(pathname), 'utf-8')
+    yield readlinkRaw(pathname)
 
   TAG = "SYMLINK"
 
