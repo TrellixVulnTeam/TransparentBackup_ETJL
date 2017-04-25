@@ -1,13 +1,9 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------------------
-#  Transparent Backup
+#  Transparent Backup Library
 #  © Geoff Crossland 2005, 2012, 2014, 2017
 # ------------------------------------------------------------------------------
-import time
 import sys
-import string
-import getopt
 import os
 import codecs
 import hashlib
@@ -17,6 +13,12 @@ import xml.sax.saxutils
 
 TMPDIR=u".tb-tmp"
 
+def getScripttypeCls (scripttype):
+  cls = globals().get(scripttype, None)
+  if not isinstance(cls, type) or ScriptFile not in cls.__mro__:
+    return None
+  return cls
+
 def exit (msg):
   isinstance(msg,basestring)
   try:
@@ -25,63 +27,13 @@ def exit (msg):
     m=repr(msg)[2:-1]
   sys.exit(m)
 
-def main (args):
-  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>]"
-  (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype=","skip-suffix="])
-  if len(leftargs)>0:
-    exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
-  opt_backup_source=None
-  opt_diff_dtml=None
-  opt_output=None
-  opt_scripttype=None
-  opt_skip_suffix=None
-  for (option,value) in optlist:
-    if option in ("-b","--backup-source"):
-      opt_backup_source=value
-      assert isinstance(opt_backup_source,unicode)
-    if option in ("-d","--diff-dtml"):
-      opt_diff_dtml=value
-      assert isinstance(opt_diff_dtml,unicode)
-    if option in ("-o","--output"):
-      opt_output=value
-      assert isinstance(opt_output,unicode)
-    if option in ("-s","--scripttype"):
-      opt_scripttype=value
-    if option=="--skip-suffix":
-      opt_skip_suffix=value
-  if opt_backup_source is None:
-    exit("No backup source path (-b) supplied\n"+syntax)
-  if not os.path.isdir(opt_backup_source):
-    exit("Backup source path (-b) is not a directory\n"+syntax)
-  if opt_output is None:
-    exit("No output path (-o) supplied\n"+syntax)
-  if not os.path.isdir(opt_output):
-    exit("Output path (-o) is not a directory\n"+syntax)
-  if opt_scripttype is None:
-    exit("No script type (-s) supplied\n"+syntax)
-  scripttypeCls=sys.modules[__name__].__dict__.get(opt_scripttype)
-  if not isinstance(scripttypeCls,type) or ScriptFile not in scripttypeCls.__mro__:
-    exit("Script type (-s) is not valid\n"+syntax)
-  opt_backup_source=os.path.abspath(opt_backup_source)
-  if opt_diff_dtml is not None:
-    opt_diff_dtml=os.path.abspath(opt_diff_dtml)
-
-  print "Backup source: "+opt_backup_source
-  print "DTML file: "+unicode(opt_diff_dtml)
-  opt_output=os.path.abspath(opt_output)
-  print "Output: "+opt_output
-
-  os.stat_float_times(True)
-
-  transparentbackup(opt_backup_source,opt_diff_dtml,opt_skip_suffix,opt_output,scripttypeCls)
-
 def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scripttypeCls):
   if old_dtml is None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
   newtree=DirectoryTree.gen_fs(new_pathname,oldtree,skip_suffix)
-  DirectoryTree.relname_cache=None
+  DirectoryTree.relname_cache={}
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))
 
@@ -949,10 +901,3 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
 
   def file_unmodified (self,oldobj,newobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
-
-if __name__=="__main__":
-  start=time.time()
-  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
-  main([arg.decode(envEncoding) for arg in sys.argv[1:]])
-  print "Took "+unicode(time.time()-start)+" secs"
-  print "Of "+unicode(quick+slow)+" files, "+unicode((quick*100)/(quick+slow))+"% didn't need to be re-hashed"

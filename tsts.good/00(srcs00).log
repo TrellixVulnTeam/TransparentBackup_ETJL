@@ -1,0 +1,553 @@
+Backing up src0.tar with BashScript:
+dtml
+--------
+<DTML>
+  <DIR name="A Subdirectory">
+    <FILE name="Cross-Moved and Edited File.txt" size=121 sha512sum=e18efb53b11787367b7b22bd3cd9e6ac4423d2d6a38dad01c6708aeaf20a57796966c921b73e05d9f2a936d5553468164c4b8046957187ce13e205c96b2c7be9 time=1270424572000>
+    <FILE name="Cross-Moved and Unedited File.txt" size=76 sha512sum=bbe69065e11cc2972e0b8ea7c665edc884ec1839d86b3a0bb320794c41d291bf24a638ddd88a769fd81750a95d3ddd45d0417940581e95c4fdfcc04c5b042b64 time=1270424352000>
+    <FILE name="Deleted File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424349000>
+    <FILE name="Moved Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424600000>
+    <FILE name="Moved and Edited File.txt" size=120 sha512sum=bf1d2159f885abb5154c209cc232d594dd401ec0695a619e5c20f454765f0a8743a33a9a3e625f74c52ffeac9ad9ae2d7c8d783cd4a4d7c89af075d49a452c9e time=1270424530000>
+    <FILE name="Moved and Unedited File.txt" size=75 sha512sum=78d24cd68cdab2ca06d59b0d74aa05c4a456066e5265f7e8dbb7339f5b9c60926ce9721644a255e3109902f8e5b60df395ce47c5578ae0a8705d067d815811f4 time=1270424345000>
+    <FILE name="Swapped File.txt" size=76 sha512sum=003e5dd8992cfb55f5cc6194fd3109564940d0eda62b72f2c4e4f5d1b468368b0decb35a56d1ef3033c1865b904eb0bda735f8812f29f236d0420e3b34cc6b1a time=1270424339000>
+    <FILE name="Unmoved &amp; Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424569000>
+    <FILE name="Unmoved and Edited File.txt" size=43 sha512sum=59338553c086cecb9b84f880a54b533ef74b38e17781469828697bc5684ad96fbd9ee0e22a58bf028108c1793d5742f7baecc23fe455d51ede543560983760f6 time=1270424337000>
+  </DIR>
+  <FILE name="Another Unmoved and Unedited File.txt" size=43 sha512sum=e2a1eff09524642952dc7abfa7ba95a2018c8e3870e8a5352eb94c11994badf7dc99ecfd7d9170eafd160397249f55d3942698e160ed0d58d9bd5ea87e496bf6 time=1270424764000>
+  <FILE name="Deleted File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424546000>
+  <DIR name="Deleted Subdirectory">
+    <FILE name="Deleted File.txt" size=62 sha512sum=e05fe03d83e9dd545a9968d575abf396c7c14924a2e343ebae74ad4505a2bb66f48db9dbe837d9d8b0671833e69d7dd0eebf34d6b8a0ba704766ec7646902d62 time=1270424791000>
+  </DIR>
+  <FILE name="Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424549000>
+  <DIR name="Moved Subdirectory">
+    <FILE name="Deleted File.txt" size=55 sha512sum=9f6966c214291323f28d7cfc592fad21689aaad6f7622e77a03c70efe9b67534f4c6661dc37de60fadf261f602ea2ea7c66b73e9dd1adb5a64be0ea527b8b054 time=1270424814000>
+    <FILE name="Moved and Edited File.txt" size=153 sha512sum=2bdf13de466adb4074114112664981074e4f17193dde481b9ab6def4231ff42376ee42dd09ccbd8136b9df9125ba7ab99fd65a8cacab7f4c72b340106b2ada19 time=1270424855000>
+    <FILE name="Moved and Unedited File.txt" size=108 sha512sum=54a6c879d150f4aa167cb717eba598da3e6997f7ecd1a1035582626bf81993aebfd002bc2468c9d91ab32803326d9ccd3c66fb38c6bfd5f094cb4662b4d27656 time=1270424807000>
+  </DIR>
+  <FILE name="Moved and Edited File.txt" size=120 sha512sum=bf1d2159f885abb5154c209cc232d594dd401ec0695a619e5c20f454765f0a8743a33a9a3e625f74c52ffeac9ad9ae2d7c8d783cd4a4d7c89af075d49a452c9e time=1270424602000>
+  <FILE name="Moved and Unedited File.txt" size=81 sha512sum=6aca6e23096ea73e2efbfec1b935049d9443aec53642e27f513464fd18080282520bb0bf7b9c3a7894d5cec80cba5e0e958629c98dc123c31701a17cd1741f68 time=1270424784000>
+  <FILE name="Swapped File.txt" size=76 sha512sum=35715d7fb8da9738dc46dfa479301dc5ddd3af452ea21c6bf2ba73c2cea58719eea535a99f1f255e754502d75ca4db3a4280f012aefd3ccef1891bc810e2d7d2 time=1270424538000>
+  <FILE name="Unmoved and Edited File.txt" size=43 sha512sum=59338553c086cecb9b84f880a54b533ef74b38e17781469828697bc5684ad96fbd9ee0e22a58bf028108c1793d5742f7baecc23fe455d51ede543560983760f6 time=1270424537000>
+  <FILE name="Unmoved and Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
+</DTML>
+--------
+builddiffs
+--------
+# Copies files to be backed up to the current directory
+mkdir --parents "."
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Another Unmoved and Unedited File.txt" "./Another Unmoved and Unedited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Deleted File.txt" "./Deleted File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Moved and Edited File.txt" "./Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Moved and Unedited File.txt" "./Moved and Unedited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Swapped File.txt" "./Swapped File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Unmoved and Edited File.txt" "./Unmoved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Unmoved and Unedited File.txt" "./Unmoved and Unedited File.txt"
+mkdir --parents "./A Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Cross-Moved and Edited File.txt" "./A Subdirectory/Cross-Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Cross-Moved and Unedited File.txt" "./A Subdirectory/Cross-Moved and Unedited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Moved and Unedited File.txt" "./A Subdirectory/Moved and Unedited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Swapped File.txt" "./A Subdirectory/Swapped File.txt"
+mkdir --parents "./Deleted Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Deleted Subdirectory/Deleted File.txt" "./Deleted Subdirectory/Deleted File.txt"
+mkdir --parents "./Moved Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Moved Subdirectory/Deleted File.txt" "./Moved Subdirectory/Deleted File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Moved Subdirectory/Moved and Edited File.txt" "./Moved Subdirectory/Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Moved Subdirectory/Moved and Unedited File.txt" "./Moved Subdirectory/Moved and Unedited File.txt"
+# Diff set file count: 15
+# Diff set total bytes: 1156
+
+--------
+pre_applydiffs
+--------
+# Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
+mkdir --parents "./A Subdirectory"
+mkdir --parents "./Deleted Subdirectory"
+mkdir --parents "./Moved Subdirectory"
+# Transfers copied files to temporary dirs
+# Transfers copied files to final destination
+# Clears away deleted objects and temporary dirs
+
+--------
+post_applydiffs
+--------
+# Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state
+# Copies duplicated updated files to all destinations
+cp --no-dereference --preserve=all "./Deleted File.txt" "./Lying File.txt"
+cp --no-dereference --preserve=all "./Deleted File.txt" "./A Subdirectory/Deleted File.txt"
+cp --no-dereference --preserve=all "./Deleted File.txt" "./A Subdirectory/Moved Lying File.txt"
+cp --no-dereference --preserve=all "./Moved and Edited File.txt" "./A Subdirectory/Moved and Edited File.txt"
+cp --no-dereference --preserve=all "./Unmoved and Edited File.txt" "./A Subdirectory/Unmoved and Edited File.txt"
+cp --no-dereference --preserve=all "./Unmoved and Unedited File.txt" "./A Subdirectory/Unmoved & Unedited File.txt"
+
+--------
+Backing up src0.tar with ZippingPythonScript:
+dtml diffs
+--------
+
+--------
+builddiffs
+--------
+import sys
+import os
+import os.path
+import zipfile
+import time
+
+def mkdir (name):
+  pass
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+ALREADY_COMPRESSEDS = set(("zip", "tgz", "gz", "jpg", "png", "mp3", "flac", "oog", "avi", "mkv", "flv", "mov", "mp4", "m4a", "m4v"))
+
+z = None
+
+def startZip (p):
+  global z
+  z = zipfile.ZipFile(p, 'w', zipfile.ZIP_DEFLATED, True)
+
+def endZip ():
+  z.close()
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  if os.path.islink(s):
+    st = os.lstat(s)
+    # (see http://www.mail-archive.com/python-list@python.org/msg34223.html and zipfile.ZipFile.write())
+    info = zipfile.ZipInfo("/".join(p for p in dst if p != os.curdir), time.localtime(st.st_mtime)[0:6])
+    info.create_system = 3
+    info.external_attr = (st.st_mode & 0xFFFF) << 16
+    z.writestr(info, os.readlink(s.encode(FS_ENCODING)))
+  else:
+    mode = zipfile.ZIP_DEFLATED
+    if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
+      mode = zipfile.ZIP_STORED
+    z.write(s, os.path.join(*dst), mode)
+
+startZip("diffs.zip")
+
+# Copies files to be backed up to the current directory
+mkdir((u'.',))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Another Unmoved and Unedited File.txt'), (u'.', u'Another Unmoved and Unedited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Deleted File.txt'), (u'.', u'Deleted File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Moved and Edited File.txt'), (u'.', u'Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Moved and Unedited File.txt'), (u'.', u'Moved and Unedited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Swapped File.txt'), (u'.', u'Swapped File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Unmoved and Edited File.txt'), (u'.', u'Unmoved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Unmoved and Unedited File.txt'), (u'.', u'Unmoved and Unedited File.txt'))
+mkdir((u'.', u'A Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Cross-Moved and Edited File.txt'), (u'.', u'A Subdirectory', u'Cross-Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Cross-Moved and Unedited File.txt'), (u'.', u'A Subdirectory', u'Cross-Moved and Unedited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Moved and Unedited File.txt'), (u'.', u'A Subdirectory', u'Moved and Unedited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Swapped File.txt'), (u'.', u'A Subdirectory', u'Swapped File.txt'))
+mkdir((u'.', u'Deleted Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Deleted Subdirectory', u'Deleted File.txt'), (u'.', u'Deleted Subdirectory', u'Deleted File.txt'))
+mkdir((u'.', u'Moved Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Moved Subdirectory', u'Deleted File.txt'), (u'.', u'Moved Subdirectory', u'Deleted File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Moved Subdirectory', u'Moved and Edited File.txt'), (u'.', u'Moved Subdirectory', u'Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Moved Subdirectory', u'Moved and Unedited File.txt'), (u'.', u'Moved Subdirectory', u'Moved and Unedited File.txt'))
+# Diff set file count: 15
+# Diff set total bytes: 1156
+
+endZip()
+--------
+pre_applydiffs
+--------
+import sys
+import os
+import os.path
+import shutil
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+def mkdir (name):
+  p = os.path.join(*name)
+  if not os.path.isdir(p):
+    os.makedirs(p)
+
+def rmdir (name):
+  os.rmdir(os.path.join(*name))
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+  else:
+    shutil.copy2(s, d)
+
+def mv (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+    os.remove(s)
+  else:
+    shutil.move(s, d)
+
+def rm (name):
+  os.remove(os.path.join(*name))
+
+# Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
+mkdir((u'.', u'A Subdirectory'))
+mkdir((u'.', u'Deleted Subdirectory'))
+mkdir((u'.', u'Moved Subdirectory'))
+# Transfers copied files to temporary dirs
+# Transfers copied files to final destination
+# Clears away deleted objects and temporary dirs
+
+--------
+post_applydiffs
+--------
+import sys
+import os
+import os.path
+import shutil
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+def mkdir (name):
+  p = os.path.join(*name)
+  if not os.path.isdir(p):
+    os.makedirs(p)
+
+def rmdir (name):
+  os.rmdir(os.path.join(*name))
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+  else:
+    shutil.copy2(s, d)
+
+def mv (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+    os.remove(s)
+  else:
+    shutil.move(s, d)
+
+def rm (name):
+  os.remove(os.path.join(*name))
+
+# Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state
+# Copies duplicated updated files to all destinations
+cp((u'.', u'Deleted File.txt'), (u'.', u'Lying File.txt'))
+cp((u'.', u'Deleted File.txt'), (u'.', u'A Subdirectory', u'Deleted File.txt'))
+cp((u'.', u'Deleted File.txt'), (u'.', u'A Subdirectory', u'Moved Lying File.txt'))
+cp((u'.', u'Moved and Edited File.txt'), (u'.', u'A Subdirectory', u'Moved and Edited File.txt'))
+cp((u'.', u'Unmoved and Edited File.txt'), (u'.', u'A Subdirectory', u'Unmoved and Edited File.txt'))
+cp((u'.', u'Unmoved and Unedited File.txt'), (u'.', u'A Subdirectory', u'Unmoved & Unedited File.txt'))
+
+--------
+Backing up src1.tar with BashScript incrementally against prev:
+dtml
+--------
+<DTML>
+  <DIR name="A Subdirectory">
+    <FILE name="Copied Unmoved &amp; Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
+    <FILE name="Created File.txt" size=25 sha512sum=fb0a6af7ef42e29aa91c803dd20ca24b9aacc4cb9582db701d8656cc995e992f76d3326bcc98d20358e9ab41c013630c7cdf12886083e90d388fa0fd59cc170d time=1258075333000>
+    <FILE name="New Moved and Edited File.txt" size=132 sha512sum=5a9a0c132a260125d7f4602aae136eb3063ded9007cfdac4653ae8a744aab5b59d188bf12a3056306a7994b08e486ff09a780b5f1bea173e8661c48e6e3a57eb time=1258075333000>
+    <FILE name="New Moved and Unedited File.txt" size=75 sha512sum=78d24cd68cdab2ca06d59b0d74aa05c4a456066e5265f7e8dbb7339f5b9c60926ce9721644a255e3109902f8e5b60df395ce47c5578ae0a8705d067d815811f4 time=1270424345000>
+    <FILE name="Swapped File.txt" size=76 sha512sum=35715d7fb8da9738dc46dfa479301dc5ddd3af452ea21c6bf2ba73c2cea58719eea535a99f1f255e754502d75ca4db3a4280f012aefd3ccef1891bc810e2d7d2 time=1270424538000>
+    <FILE name="Unmoved &amp; Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424569000>
+    <FILE name="Unmoved and Edited File.txt" size=55 sha512sum=f83e0c4786c572f94988f4ebb5aab9857b903ac77ac18d62159a3a43db01a0f9a93ba4247065219d235e4b642219941f0f5c93fa4a168922a998cd563c617c59 time=1258075333000>
+  </DIR>
+  <FILE name="Another Unmoved and Unedited File.txt" size=43 sha512sum=e2a1eff09524642952dc7abfa7ba95a2018c8e3870e8a5352eb94c11994badf7dc99ecfd7d9170eafd160397249f55d3942698e160ed0d58d9bd5ea87e496bf6 time=1270424764000>
+  <FILE name="Copied Another Unmoved and Unedited File.txt" size=43 sha512sum=e2a1eff09524642952dc7abfa7ba95a2018c8e3870e8a5352eb94c11994badf7dc99ecfd7d9170eafd160397249f55d3942698e160ed0d58d9bd5ea87e496bf6 time=1270424764000>
+  <FILE name="Copied Unmoved and Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
+  <FILE name="Created File.txt" size=29 sha512sum=4e501a500022e843d4db11a0dba1e12ed305264fe05a0dae0bf89c5db8f792a6a2dcadafcb0dd404a7f58dc2b9b265e8b3c5b2fef3a711e4214e41c68b4a4b04 time=1258075332000>
+  <DIR name="Created Subdirectory">
+    <FILE name="Created File.txt" size=62 sha512sum=a06af7879b94dc0b48838169f7fdab7818bb901fbc41c751c8a9fe90b4fc9e917a2a853f6c4517f374ce7fececd7353e450b759d51fb56d5ec832def843f9d71 time=1258075333000>
+    <FILE name="New Moved Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424549000>
+  </DIR>
+  <FILE name="Cross-Moved and Edited File.txt" size=140 sha512sum=8c21ba97552bb9fe518a1e59a60b8a933ad0a397a720e52427a4071437925f61c387ab0cdf0bff0a73d4f644d394be757ad5a68b56f4f5f806a548bcf197a476 time=1258075332000>
+  <FILE name="Cross-Moved and Unedited File.txt" size=76 sha512sum=bbe69065e11cc2972e0b8ea7c665edc884ec1839d86b3a0bb320794c41d291bf24a638ddd88a769fd81750a95d3ddd45d0417940581e95c4fdfcc04c5b042b64 time=1270424352000>
+  <FILE name="Lying File.txt" size=25 sha512sum=3947ada416c8f96bd3ca84056ed9d80d1ff6b34e897eb7106a35c17cff5a113b5c8250b761347afe78db578cad9b11509e9fa94af1847172b548c240493b7964 time=1270424549000>
+  <DIR name="New Moved Subdirectory">
+    <FILE name="Created File.txt" size=29 sha512sum=4e501a500022e843d4db11a0dba1e12ed305264fe05a0dae0bf89c5db8f792a6a2dcadafcb0dd404a7f58dc2b9b265e8b3c5b2fef3a711e4214e41c68b4a4b04 time=1258075332000>
+    <FILE name="Cross-Copied Unmoved &amp; Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
+    <FILE name="Double Cross-Moved and Edited File.txt" size=175 sha512sum=80cae990b6a8e94b7f55fac403bb7648e4169c0ab73b46af1de11240eadc61253df36e4042b1da6da2306da4e12eedd27db425c6387a0623f71676b3d1f4e228 time=1258075333000>
+    <FILE name="Double Cross-Moved and Unedited File.txt" size=76 sha512sum=bbe69065e11cc2972e0b8ea7c665edc884ec1839d86b3a0bb320794c41d291bf24a638ddd88a769fd81750a95d3ddd45d0417940581e95c4fdfcc04c5b042b64 time=1270424352000>
+    <FILE name="Moved and Edited File.txt" size=171 sha512sum=3e84f74642d776d28ab13cb1fadf0e0035015e3205d5ca84b94f15bc17041610a3d9b1cca6f0d2297e3509c90b9f018e632937d5888880dee191b55dbacce1cd time=1258075333000>
+    <FILE name="Moved and Unedited File.txt" size=108 sha512sum=54a6c879d150f4aa167cb717eba598da3e6997f7ecd1a1035582626bf81993aebfd002bc2468c9d91ab32803326d9ccd3c66fb38c6bfd5f094cb4662b4d27656 time=1270424807000>
+  </DIR>
+  <FILE name="New Moved and Edited File.txt" size=139 sha512sum=cf0664f356dd296bb0fa85cd710188110e978aefb0d076c4fb860982dba60ff45ba17869f9a492eabaca6b517258b7edccb33d1469f1f82e277bb951389f17ff time=1258075332000>
+  <FILE name="New Moved and Unedited File.txt" size=81 sha512sum=6aca6e23096ea73e2efbfec1b935049d9443aec53642e27f513464fd18080282520bb0bf7b9c3a7894d5cec80cba5e0e958629c98dc123c31701a17cd1741f68 time=1270424784000>
+  <FILE name="Swapped File.txt" size=76 sha512sum=003e5dd8992cfb55f5cc6194fd3109564940d0eda62b72f2c4e4f5d1b468368b0decb35a56d1ef3033c1865b904eb0bda735f8812f29f236d0420e3b34cc6b1a time=1270424339000>
+  <FILE name="Unmoved and Edited File.txt" size=53 sha512sum=71d8a21e1e86955c4b9b67bb1727320713ea1908afec5b9284034d5b9908e90f990290d76d0bf93f365db34df3118c79606222a55d6b9e9a1782b9ad1e1cf3a4 time=1258075332000>
+  <FILE name="Unmoved and Unedited File.txt" size=42 sha512sum=4b467fe6671b6312cd63b25499627e2f175aab75283635cab6a0725d365b887bd6abbefc319a7c8e5fe78ac2c22f639bb6122e32457554dde6a454a6376ba2df time=1270424314000>
+</DTML>
+--------
+builddiffs
+--------
+# Copies files to be backed up to the current directory
+mkdir --parents "."
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Created File.txt" "./Created File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Cross-Moved and Edited File.txt" "./Cross-Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./New Moved and Edited File.txt" "./New Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Unmoved and Edited File.txt" "./Unmoved and Edited File.txt"
+mkdir --parents "./A Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Created File.txt" "./A Subdirectory/Created File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/New Moved and Edited File.txt" "./A Subdirectory/New Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./A Subdirectory/Unmoved and Edited File.txt" "./A Subdirectory/Unmoved and Edited File.txt"
+mkdir --parents "./Created Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./Created Subdirectory/Created File.txt" "./Created Subdirectory/Created File.txt"
+mkdir --parents "./New Moved Subdirectory"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./New Moved Subdirectory/Double Cross-Moved and Edited File.txt" "./New Moved Subdirectory/Double Cross-Moved and Edited File.txt"
+cp --no-dereference --preserve=all "/tmp/TransparentBackup/src/./New Moved Subdirectory/Moved and Edited File.txt" "./New Moved Subdirectory/Moved and Edited File.txt"
+# Diff set file count: 10
+# Diff set total bytes: 981
+
+--------
+pre_applydiffs
+--------
+# Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
+mkdir --parents "./Created Subdirectory"
+mkdir --parents "./New Moved Subdirectory"
+# Transfers copied files to temporary dirs
+mkdir --parents "./.tb-tmp"
+cp --no-dereference --preserve=all "./Another Unmoved and Unedited File.txt" "./.tb-tmp/Another Unmoved and Unedited File.txt"
+cp --no-dereference --preserve=all "./Lying File.txt" "./.tb-tmp/Lying File.txt"
+mv "./Moved and Unedited File.txt" "./.tb-tmp/Moved and Unedited File.txt"
+mv "./Swapped File.txt" "./.tb-tmp/Swapped File.txt"
+cp --no-dereference --preserve=all "./Unmoved and Unedited File.txt" "./.tb-tmp/Unmoved and Unedited File.txt"
+mkdir --parents "./A Subdirectory/.tb-tmp"
+mv "./A Subdirectory/Cross-Moved and Unedited File.txt" "./A Subdirectory/.tb-tmp/Cross-Moved and Unedited File.txt"
+mv "./A Subdirectory/Moved and Unedited File.txt" "./A Subdirectory/.tb-tmp/Moved and Unedited File.txt"
+mv "./A Subdirectory/Swapped File.txt" "./A Subdirectory/.tb-tmp/Swapped File.txt"
+mkdir --parents "./Moved Subdirectory/.tb-tmp"
+mv "./Moved Subdirectory/Moved and Unedited File.txt" "./Moved Subdirectory/.tb-tmp/Moved and Unedited File.txt"
+# Transfers copied files to final destination
+mv "./.tb-tmp/Another Unmoved and Unedited File.txt" "./Copied Another Unmoved and Unedited File.txt"
+mv "./.tb-tmp/Lying File.txt" "./Created Subdirectory/New Moved Lying File.txt"
+mv "./.tb-tmp/Moved and Unedited File.txt" "./New Moved and Unedited File.txt"
+mv "./.tb-tmp/Swapped File.txt" "./A Subdirectory/Swapped File.txt"
+cp --no-dereference --preserve=all "./.tb-tmp/Unmoved and Unedited File.txt" "./Copied Unmoved and Unedited File.txt"
+cp --no-dereference --preserve=all "./.tb-tmp/Unmoved and Unedited File.txt" "./A Subdirectory/Copied Unmoved & Unedited File.txt"
+mv "./.tb-tmp/Unmoved and Unedited File.txt" "./New Moved Subdirectory/Cross-Copied Unmoved & Unedited File.txt"
+cp --no-dereference --preserve=all "./A Subdirectory/.tb-tmp/Cross-Moved and Unedited File.txt" "./Cross-Moved and Unedited File.txt"
+mv "./A Subdirectory/.tb-tmp/Cross-Moved and Unedited File.txt" "./New Moved Subdirectory/Double Cross-Moved and Unedited File.txt"
+mv "./A Subdirectory/.tb-tmp/Moved and Unedited File.txt" "./A Subdirectory/New Moved and Unedited File.txt"
+mv "./A Subdirectory/.tb-tmp/Swapped File.txt" "./Swapped File.txt"
+mv "./Moved Subdirectory/.tb-tmp/Moved and Unedited File.txt" "./New Moved Subdirectory/Moved and Unedited File.txt"
+# Clears away deleted objects and temporary dirs
+rm -f "./Deleted File.txt"
+rm -f "./Moved and Edited File.txt"
+rm -f "./A Subdirectory/Cross-Moved and Edited File.txt"
+rm -f "./A Subdirectory/Deleted File.txt"
+rm -f "./A Subdirectory/Moved Lying File.txt"
+rm -f "./A Subdirectory/Moved and Edited File.txt"
+rmdir "./A Subdirectory/.tb-tmp"
+rm -f "./Deleted Subdirectory/Deleted File.txt"
+rmdir "./Deleted Subdirectory"
+rm -f "./Moved Subdirectory/Deleted File.txt"
+rm -f "./Moved Subdirectory/Moved and Edited File.txt"
+rmdir "./Moved Subdirectory/.tb-tmp"
+rmdir "./Moved Subdirectory"
+rmdir "./.tb-tmp"
+
+--------
+post_applydiffs
+--------
+# Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state
+# Copies duplicated updated files to all destinations
+cp --no-dereference --preserve=all "./Created File.txt" "./New Moved Subdirectory/Created File.txt"
+
+--------
+Backing up src1.tar with ZippingPythonScript incrementally against prev:
+dtml diffs
+--------
+
+--------
+builddiffs
+--------
+import sys
+import os
+import os.path
+import zipfile
+import time
+
+def mkdir (name):
+  pass
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+ALREADY_COMPRESSEDS = set(("zip", "tgz", "gz", "jpg", "png", "mp3", "flac", "oog", "avi", "mkv", "flv", "mov", "mp4", "m4a", "m4v"))
+
+z = None
+
+def startZip (p):
+  global z
+  z = zipfile.ZipFile(p, 'w', zipfile.ZIP_DEFLATED, True)
+
+def endZip ():
+  z.close()
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  if os.path.islink(s):
+    st = os.lstat(s)
+    # (see http://www.mail-archive.com/python-list@python.org/msg34223.html and zipfile.ZipFile.write())
+    info = zipfile.ZipInfo("/".join(p for p in dst if p != os.curdir), time.localtime(st.st_mtime)[0:6])
+    info.create_system = 3
+    info.external_attr = (st.st_mode & 0xFFFF) << 16
+    z.writestr(info, os.readlink(s.encode(FS_ENCODING)))
+  else:
+    mode = zipfile.ZIP_DEFLATED
+    if os.path.splitext(src[-1])[1][1:].lower() in ALREADY_COMPRESSEDS:
+      mode = zipfile.ZIP_STORED
+    z.write(s, os.path.join(*dst), mode)
+
+startZip("diffs.zip")
+
+# Copies files to be backed up to the current directory
+mkdir((u'.',))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Created File.txt'), (u'.', u'Created File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Cross-Moved and Edited File.txt'), (u'.', u'Cross-Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'New Moved and Edited File.txt'), (u'.', u'New Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Unmoved and Edited File.txt'), (u'.', u'Unmoved and Edited File.txt'))
+mkdir((u'.', u'A Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Created File.txt'), (u'.', u'A Subdirectory', u'Created File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'New Moved and Edited File.txt'), (u'.', u'A Subdirectory', u'New Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'A Subdirectory', u'Unmoved and Edited File.txt'), (u'.', u'A Subdirectory', u'Unmoved and Edited File.txt'))
+mkdir((u'.', u'Created Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'Created Subdirectory', u'Created File.txt'), (u'.', u'Created Subdirectory', u'Created File.txt'))
+mkdir((u'.', u'New Moved Subdirectory'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'New Moved Subdirectory', u'Double Cross-Moved and Edited File.txt'), (u'.', u'New Moved Subdirectory', u'Double Cross-Moved and Edited File.txt'))
+cp((u'/', u'tmp', u'TransparentBackup', u'src', u'.', u'New Moved Subdirectory', u'Moved and Edited File.txt'), (u'.', u'New Moved Subdirectory', u'Moved and Edited File.txt'))
+# Diff set file count: 10
+# Diff set total bytes: 981
+
+endZip()
+--------
+pre_applydiffs
+--------
+import sys
+import os
+import os.path
+import shutil
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+def mkdir (name):
+  p = os.path.join(*name)
+  if not os.path.isdir(p):
+    os.makedirs(p)
+
+def rmdir (name):
+  os.rmdir(os.path.join(*name))
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+  else:
+    shutil.copy2(s, d)
+
+def mv (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+    os.remove(s)
+  else:
+    shutil.move(s, d)
+
+def rm (name):
+  os.remove(os.path.join(*name))
+
+# Prepares the previous state of the backup set, rooted in the current directory, for having the updated files copied over it
+mkdir((u'.', u'Created Subdirectory'))
+mkdir((u'.', u'New Moved Subdirectory'))
+# Transfers copied files to temporary dirs
+mkdir((u'.', u'.tb-tmp'))
+cp((u'.', u'Another Unmoved and Unedited File.txt'), (u'.', u'.tb-tmp', u'Another Unmoved and Unedited File.txt'))
+cp((u'.', u'Lying File.txt'), (u'.', u'.tb-tmp', u'Lying File.txt'))
+mv((u'.', u'Moved and Unedited File.txt'), (u'.', u'.tb-tmp', u'Moved and Unedited File.txt'))
+mv((u'.', u'Swapped File.txt'), (u'.', u'.tb-tmp', u'Swapped File.txt'))
+cp((u'.', u'Unmoved and Unedited File.txt'), (u'.', u'.tb-tmp', u'Unmoved and Unedited File.txt'))
+mkdir((u'.', u'A Subdirectory', u'.tb-tmp'))
+mv((u'.', u'A Subdirectory', u'Cross-Moved and Unedited File.txt'), (u'.', u'A Subdirectory', u'.tb-tmp', u'Cross-Moved and Unedited File.txt'))
+mv((u'.', u'A Subdirectory', u'Moved and Unedited File.txt'), (u'.', u'A Subdirectory', u'.tb-tmp', u'Moved and Unedited File.txt'))
+mv((u'.', u'A Subdirectory', u'Swapped File.txt'), (u'.', u'A Subdirectory', u'.tb-tmp', u'Swapped File.txt'))
+mkdir((u'.', u'Moved Subdirectory', u'.tb-tmp'))
+mv((u'.', u'Moved Subdirectory', u'Moved and Unedited File.txt'), (u'.', u'Moved Subdirectory', u'.tb-tmp', u'Moved and Unedited File.txt'))
+# Transfers copied files to final destination
+mv((u'.', u'.tb-tmp', u'Another Unmoved and Unedited File.txt'), (u'.', u'Copied Another Unmoved and Unedited File.txt'))
+mv((u'.', u'.tb-tmp', u'Lying File.txt'), (u'.', u'Created Subdirectory', u'New Moved Lying File.txt'))
+mv((u'.', u'.tb-tmp', u'Moved and Unedited File.txt'), (u'.', u'New Moved and Unedited File.txt'))
+mv((u'.', u'.tb-tmp', u'Swapped File.txt'), (u'.', u'A Subdirectory', u'Swapped File.txt'))
+cp((u'.', u'.tb-tmp', u'Unmoved and Unedited File.txt'), (u'.', u'Copied Unmoved and Unedited File.txt'))
+cp((u'.', u'.tb-tmp', u'Unmoved and Unedited File.txt'), (u'.', u'A Subdirectory', u'Copied Unmoved & Unedited File.txt'))
+mv((u'.', u'.tb-tmp', u'Unmoved and Unedited File.txt'), (u'.', u'New Moved Subdirectory', u'Cross-Copied Unmoved & Unedited File.txt'))
+cp((u'.', u'A Subdirectory', u'.tb-tmp', u'Cross-Moved and Unedited File.txt'), (u'.', u'Cross-Moved and Unedited File.txt'))
+mv((u'.', u'A Subdirectory', u'.tb-tmp', u'Cross-Moved and Unedited File.txt'), (u'.', u'New Moved Subdirectory', u'Double Cross-Moved and Unedited File.txt'))
+mv((u'.', u'A Subdirectory', u'.tb-tmp', u'Moved and Unedited File.txt'), (u'.', u'A Subdirectory', u'New Moved and Unedited File.txt'))
+mv((u'.', u'A Subdirectory', u'.tb-tmp', u'Swapped File.txt'), (u'.', u'Swapped File.txt'))
+mv((u'.', u'Moved Subdirectory', u'.tb-tmp', u'Moved and Unedited File.txt'), (u'.', u'New Moved Subdirectory', u'Moved and Unedited File.txt'))
+# Clears away deleted objects and temporary dirs
+rm((u'.', u'Deleted File.txt'))
+rm((u'.', u'Moved and Edited File.txt'))
+rm((u'.', u'A Subdirectory', u'Cross-Moved and Edited File.txt'))
+rm((u'.', u'A Subdirectory', u'Deleted File.txt'))
+rm((u'.', u'A Subdirectory', u'Moved Lying File.txt'))
+rm((u'.', u'A Subdirectory', u'Moved and Edited File.txt'))
+rmdir((u'.', u'A Subdirectory', u'.tb-tmp'))
+rm((u'.', u'Deleted Subdirectory', u'Deleted File.txt'))
+rmdir((u'.', u'Deleted Subdirectory'))
+rm((u'.', u'Moved Subdirectory', u'Deleted File.txt'))
+rm((u'.', u'Moved Subdirectory', u'Moved and Edited File.txt'))
+rmdir((u'.', u'Moved Subdirectory', u'.tb-tmp'))
+rmdir((u'.', u'Moved Subdirectory'))
+rmdir((u'.', u'.tb-tmp'))
+
+--------
+post_applydiffs
+--------
+import sys
+import os
+import os.path
+import shutil
+
+FS_ENCODING = sys.getfilesystemencoding() or sys.getdefaultencoding()
+
+def mkdir (name):
+  p = os.path.join(*name)
+  if not os.path.isdir(p):
+    os.makedirs(p)
+
+def rmdir (name):
+  os.rmdir(os.path.join(*name))
+
+def cp (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+  else:
+    shutil.copy2(s, d)
+
+def mv (src, dst):
+  s = os.path.join(*src)
+  d = os.path.join(*dst)
+  if os.path.islink(s):
+    os.symlink(os.readlink(s.encode(FS_ENCODING)), d)
+    os.remove(s)
+  else:
+    shutil.move(s, d)
+
+def rm (name):
+  os.remove(os.path.join(*name))
+
+# Converts the aggregation of the previous state of the backup set and the updated files, rooted in the current directory, to the final new state
+# Copies duplicated updated files to all destinations
+cp((u'.', u'Created File.txt'), (u'.', u'New Moved Subdirectory', u'Created File.txt'))
+
+--------
+

@@ -51,7 +51,7 @@ def main (args):
     outputDirPathName = os.path.join(rootOutputDirPathName, outputDirPathName)
 
     os.mkdir(outputDirPathName)
-    tbArgs = [sys.executable, os.path.join(os.path.dirname(sys.argv[0]), "transparentbackup.py"), "--backup-source", backupSourcePathName, "--output", outputDirPathName, "--scripttype", mode + "PythonScript", "--skip-suffix", ".NOBACKUP"]
+    tbArgs = [sys.executable, os.path.dirname(sys.argv[0]), "--backup-source", backupSourcePathName, "--output", outputDirPathName, "--scripttype", mode + "PythonScript", "--skip-suffix", ".NOBACKUP"]
     if dtmlFilePathName is not None:
       tbArgs += ["--diff-dtml", dtmlFilePathName]
     p = subprocess.Popen(tbArgs)
