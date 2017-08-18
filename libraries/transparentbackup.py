@@ -27,12 +27,16 @@ def exit (msg):
     m=repr(msg)[2:-1]
   sys.exit(m)
 
-def transparentbackup (new_pathname,old_dtml,skip_suffix,output_pathname,scripttypeCls):
+def transparentbackup (new_pathname, old_dtml, signatures_dtml, skip_suffix, output_pathname, scripttypeCls):
   if old_dtml is None:
     oldtree=DirectoryTree.gen_empty()
   else:
     oldtree=DirectoryTree.gen_dtml(old_dtml)
-  newtree=DirectoryTree.gen_fs(new_pathname,oldtree,skip_suffix)
+  if signatures_dtml is None:
+    signaturesTree = oldtree
+  else:
+    signaturesTree = DirectoryTree.gen_dtml(signatures_dtml)
+  newtree=DirectoryTree.gen_fs(new_pathname, signaturesTree, skip_suffix)
   DirectoryTree.relname_cache={}
   ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))

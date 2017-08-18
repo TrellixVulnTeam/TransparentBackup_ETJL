@@ -13,11 +13,12 @@ import transparentbackup
 
 def main (args):
   syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>]"
-  (optlist,leftargs)=getopt.getopt(args,"b:d:o:s:",["backup-source=","diff-dtml=","output=","scripttype=","skip-suffix="])
+  (optlist, leftargs) = getopt.getopt(args, "b:d:o:s:", ["backup-source=", "diff-dtml=", "signatures-dtml=", "output=", "scripttype=", "skip-suffix="])
   if len(leftargs)>0:
     exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
   opt_backup_source=None
   opt_diff_dtml=None
+  opt_signatures_dtml = None
   opt_output=None
   opt_scripttype=None
   opt_skip_suffix=None
@@ -28,6 +29,9 @@ def main (args):
     if option in ("-d","--diff-dtml"):
       opt_diff_dtml=value
       assert isinstance(opt_diff_dtml,unicode)
+    if option == "--signatures-dtml":
+      opt_signatures_dtml = value
+      assert isinstance(opt_signatures_dtml, unicode)
     if option in ("-o","--output"):
       opt_output=value
       assert isinstance(opt_output,unicode)
@@ -49,15 +53,19 @@ def main (args):
   if not scripttypeCls:
     exit("Script type (-s) is not valid\n"+syntax)
   opt_backup_source=os.path.abspath(opt_backup_source)
+  if opt_diff_dtml is not None and opt_signatures_dtml is not None:
+    exit("Multiple DTML files supplied\n" + syntax)
   if opt_diff_dtml is not None:
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
+  if opt_signatures_dtml is not None:
+    opt_signatures_dtml = os.path.abspath(opt_signatures_dtml)
 
   print "Backup source: "+opt_backup_source
   print "DTML file: "+unicode(opt_diff_dtml)
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
-  transparentbackup.transparentbackup(opt_backup_source, opt_diff_dtml, opt_skip_suffix, opt_output, scripttypeCls)
+  transparentbackup.transparentbackup(opt_backup_source, opt_diff_dtml, opt_signatures_dtml, opt_skip_suffix, opt_output, scripttypeCls)
 
 if __name__=="__main__":
   start=time.time()
