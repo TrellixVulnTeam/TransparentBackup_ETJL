@@ -12,8 +12,8 @@ from transparentbackup import exit
 import transparentbackup
 
 def main (args):
-  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>]"
-  (optlist, leftargs) = getopt.getopt(args, "b:d:o:s:", ["backup-source=", "diff-dtml=", "signatures-dtml=", "output=", "scripttype=", "skip-suffix="])
+  syntax="Syntax: transparentbackup [-b|--backup-source <backupdir>] [-d|--diff-dtml <dtmlfile>] [-o|--output <outputdir>] [-s|--scripttype <script type>] [--skip-suffix <suffix>] [--dedupe-minsize <bytes>]"
+  (optlist, leftargs) = getopt.getopt(args, "b:d:o:s:", ["backup-source=", "diff-dtml=", "signatures-dtml=", "output=", "scripttype=", "skip-suffix=", "dedupe-minsize="])
   if len(leftargs)>0:
     exit("Unknown arguments on command line ('"+unicode(leftargs)+"')\n"+syntax)
   opt_backup_source=None
@@ -22,6 +22,7 @@ def main (args):
   opt_output=None
   opt_scripttype=None
   opt_skip_suffix=None
+  opt_dedupe_minsize = None
   for (option,value) in optlist:
     if option in ("-b","--backup-source"):
       opt_backup_source=value
@@ -39,6 +40,8 @@ def main (args):
       opt_scripttype=value
     if option=="--skip-suffix":
       opt_skip_suffix=value
+    if option == "--dedupe-minsize":
+      opt_dedupe_minsize = value
   if opt_backup_source is None:
     exit("No backup source path (-b) supplied\n"+syntax)
   if not os.path.isdir(opt_backup_source):
@@ -59,13 +62,20 @@ def main (args):
     opt_diff_dtml=os.path.abspath(opt_diff_dtml)
   if opt_signatures_dtml is not None:
     opt_signatures_dtml = os.path.abspath(opt_signatures_dtml)
+  if opt_dedupe_minsize is None:
+    opt_dedupe_minsize = 0
+  else:
+    try:
+      opt_dedupe_minsize = int(opt_dedupe_minsize)
+    except ValueError as e:
+      exit("Deduplication minimum file size (--dedupe-minsize) is not valid\n" + syntax)
 
   print "Backup source: "+opt_backup_source
   print "DTML file: "+unicode(opt_diff_dtml)
   opt_output=os.path.abspath(opt_output)
   print "Output: "+opt_output
 
-  transparentbackup.transparentbackup(opt_backup_source, opt_diff_dtml, opt_signatures_dtml, opt_skip_suffix, opt_output, scripttypeCls)
+  transparentbackup.transparentbackup(opt_backup_source, opt_diff_dtml, opt_signatures_dtml, opt_skip_suffix, opt_dedupe_minsize, opt_output, scripttypeCls)
 
 if __name__=="__main__":
   start=time.time()

@@ -27,7 +27,7 @@ def exit (msg):
     m=repr(msg)[2:-1]
   sys.exit(m)
 
-def transparentbackup (new_pathname, old_dtml, signatures_dtml, skip_suffix, output_pathname, scripttypeCls):
+def transparentbackup (new_pathname, old_dtml, signatures_dtml, skip_suffix, dedupeMinimumSize, output_pathname, scripttypeCls):
   if old_dtml is None:
     oldtree=DirectoryTree.gen_empty()
   else:
@@ -38,7 +38,7 @@ def transparentbackup (new_pathname, old_dtml, signatures_dtml, skip_suffix, out
     signaturesTree = DirectoryTree.gen_dtml(signatures_dtml)
   newtree=DirectoryTree.gen_fs(new_pathname, signaturesTree, skip_suffix)
   DirectoryTree.relname_cache={}
-  ScriptDirectoryTreeDiffer().diff(oldtree,newtree,new_pathname,output_pathname,scripttypeCls)
+  ScriptDirectoryTreeDiffer().diff(oldtree, newtree, new_pathname, output_pathname, dedupeMinimumSize, scripttypeCls)
   newtree.writedtml(os.path.join(output_pathname,u"!fullstate.dtml"))
 
 quick=0
@@ -749,11 +749,21 @@ class FilingPythonScript (AbstractPythonScript):
 
 class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
   class Files:
-    def __init__ (self):
-      self.oldfiles={}
-      self.newfiles={}
+    def __init__ (self, minimumSize):
+      assert isinstance(minimumSize, int)
+      self.files = {}
+      self.minimumSize = minimumSize
 
-  def diff (self,oldtree,newtree,new_pathname,output_pathname,scripttypeCls):
+    def getIdentical (self, obj):
+      assert isinstance(obj, File)
+      return self.files.get(obj.strongSignature, None)
+
+    def add (self, obj):
+      assert isinstance(obj, File)
+      if obj.strongSignature.size >= self.minimumSize:
+        self.files[obj.strongSignature] = obj
+
+  def diff (self, oldtree, newtree, new_pathname, output_pathname, dedupeMinimumSize, scripttypeCls):
     self.new_pathname=new_pathname
 
     name=os.path.join(output_pathname,u"!builddiffs")
@@ -768,8 +778,8 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
 
     self.builddiffs_files_count=0
     self.builddiffs_files_size=0
-    files=ScriptDirectoryTreeDiffer.Files()
-    self.diff_pre_old(oldtree.root,files.oldfiles)
+    files = ScriptDirectoryTreeDiffer.Files(dedupeMinimumSize)
+    self.diff_pre_old(oldtree.root,files)
     self.diff_pre_new(newtree.root)
     self.diff_dir(oldtree.root,newtree.root,files)
     self.preapplydiffs_file.comment("Transfers copied files to temporary dirs")
@@ -792,7 +802,7 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
 
     for oldsubobj in olddir.subobjs:
       if isinstance(oldsubobj,File):
-        files[oldsubobj.strongSignature]=oldsubobj
+        files.add(oldsubobj)
         oldsubobj.copies=[]
       elif isinstance(oldsubobj,Directory):
         self.diff_pre_old(oldsubobj,files)
@@ -879,22 +889,19 @@ class ScriptDirectoryTreeDiffer (DirectoryTreeDiffer):
     oldobj.status=DirectoryTreeDiffer.STATUS_UNMODIFIED
 
   def file_gen (self,newobj,newdir,files):
-    obj=files.oldfiles.get(newobj.strongSignature,None)
-    if obj is None:
-      # The new file is not a direct copy of an old one
-      obj=files.newfiles.get(newobj.strongSignature,None)
+    obj = files.getIdentical(newobj)
     if obj is not None:
-      # The new file is a copy of an old one or another new one
+      # The new file is a copy of a large-enough old one or another large-enough new one.
       obj.copies.append(newobj)
     else:
-      # The new file is neither a direct copy of an old one nor of a new one
+      # The new file is neither a direct copy of a large-enough old one nor of a large-enough new one.
       if not newdir.__dict__.has_key('inbuilddiffs'):
         self.builddiffs_file.mkdir(os.path.dirname(newobj.relname))
         newdir.inbuilddiffs=True
       self.builddiffs_file.cp(os.path.join(self.new_pathname,newobj.relname),newobj.relname)
       self.builddiffs_files_count=self.builddiffs_files_count+1
       self.builddiffs_files_size=self.builddiffs_files_size+newobj.strongSignature.size
-      files.newfiles[newobj.strongSignature]=newobj
+      files.add(newobj)
 
   def file_del (self,oldobj,files):
     oldobj.status=DirectoryTreeDiffer.STATUS_DELETED

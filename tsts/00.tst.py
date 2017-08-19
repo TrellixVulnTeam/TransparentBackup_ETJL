@@ -38,7 +38,7 @@ def T (data):
     for scripttypeCls in (transparentbackup.getScripttypeCls(p + "Script") for p in ("Bash", "ZippingPython")):
       t("Backing up {} with {}{}:", src, scripttypeCls.__name__, (" incrementally against prev", "")[firstSrc])
       os.makedirs(OUT_PATH_NAME)
-      transparentbackup.transparentbackup(SRC_PATH_NAME, (PREV_DTML_PATH_NAME, None)[firstSrc], None, u".NOBACKUP", OUT_PATH_NAME, scripttypeCls)
+      transparentbackup.transparentbackup(SRC_PATH_NAME, (PREV_DTML_PATH_NAME, None)[firstSrc], None, u".NOBACKUP", 0, OUT_PATH_NAME, scripttypeCls)
 
       dtmlPathName = os.path.join(OUT_PATH_NAME, "!fullstate.dtml")
       builddiffsPathName = glob.glob(os.path.join(OUT_PATH_NAME, "!builddiffs.*"))[0]
