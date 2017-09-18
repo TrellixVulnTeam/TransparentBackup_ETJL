@@ -79,7 +79,6 @@ def main (args):
 
 if __name__=="__main__":
   start=time.time()
-  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
-  main([arg.decode(envEncoding) for arg in sys.argv[1:]])
+  main([arg.decode(sys.getfilesystemencoding() or sys.getdefaultencoding()) for arg in sys.argv[1:]])
   print "Took "+unicode(time.time()-start)+" secs"
   print "Of "+unicode(transparentbackup.quick+transparentbackup.slow)+" files, "+unicode((transparentbackup.quick*100)/(transparentbackup.quick+transparentbackup.slow))+"% didn't need to be re-hashed"

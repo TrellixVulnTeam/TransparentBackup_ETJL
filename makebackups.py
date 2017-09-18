@@ -71,5 +71,4 @@ def main (args):
     shutil.move(os.path.join(outputDirPathName, STATE_LEAF_NAME), backupSetName + dateStr + ".dtml")
 
 if __name__ == "__main__":
-  envEncoding = sys.stdin.encoding or sys.getdefaultencoding()
-  main([arg.decode(envEncoding) for arg in sys.argv[1:]])
+  main([arg.decode(sys.getfilesystemencoding() or sys.getdefaultencoding()) for arg in sys.argv[1:]])
