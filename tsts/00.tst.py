@@ -32,7 +32,26 @@ def T (data):
   for src in srcs:
     os.makedirs(SRC_PATH_NAME)
     with tarfile.open(os.path.join(data, src)) as tf:
-      tf.extractall(SRC_PATH_NAME)
+      def is_within_directory(directory, target):
+          
+          abs_directory = os.path.abspath(directory)
+          abs_target = os.path.abspath(target)
+      
+          prefix = os.path.commonprefix([abs_directory, abs_target])
+          
+          return prefix == abs_directory
+      
+      def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+      
+          for member in tar.getmembers():
+              member_path = os.path.join(path, member.name)
+              if not is_within_directory(path, member_path):
+                  raise Exception("Attempted Path Traversal in Tar File")
+      
+          tar.extractall(path, members, numeric_owner=numeric_owner) 
+          
+      
+      safe_extract(tf, SRC_PATH_NAME)
 
     firstScripttype = True
     for scripttypeCls in (transparentbackup.getScripttypeCls(p + "Script") for p in ("Bash", "ZippingPython")):
